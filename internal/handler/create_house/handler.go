@@ -13,17 +13,19 @@ import (
 
 type Handler struct {
 	roles   deps.RolesReader
-	usecase create_house.Usecase
+	usecase *create_house.Usecase
 }
 
-func NewHandler(usecase create_house.Usecase) *Handler {
+func NewHandler(usecase *create_house.Usecase) *Handler {
 	return &Handler{
 		usecase: usecase,
 	}
 }
 
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
-	role, err := h.roles.GetRole(r.Context())
+	ctx := r.Context()
+
+	role, err := h.roles.GetRole(ctx)
 	if err != nil {
 		handler.ErrorResponse(w, err)
 		return
@@ -38,6 +40,10 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	_, err = r.Body.Read(bodyBytes)
 	defer r.Body.Close()
 
+	if err != nil {
+		handler.ErrorResponse(w, err)
+	}
+
 	genReq := generated.PostHouseCreateJSONBody{}
 	err = json.Unmarshal(bodyBytes, &genReq)
 	if err != nil {
@@ -47,12 +53,11 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 
 	house := converters.HouseFromGen(genReq)
 
-	err = h.usecase.Handle(house)
+	err = h.usecase.Handle(ctx, house)
 	if err != nil {
 		handler.ErrorResponse(w, err)
 		return
 	}
 
 	handler.SuccessResponse(w, nil)
-	return
 }

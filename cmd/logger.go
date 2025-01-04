@@ -66,10 +66,10 @@ func (l *Logger) WithFields(ctx context.Context, f map[string]string) context.Co
 	return context.WithValue(ctx, defaultTagName, t)
 }
 
-func (l *Logger) Info(ctx context.Context, message string) {
-	l.InfoContext(ctx, message)
+func (l *Logger) Info(ctx context.Context, message string, args ...any) {
+	l.InfoContext(ctx, message, args...)
 }
 
-func (l *Logger) Error(ctx context.Context, err error) {
-	l.ErrorContext(ctx, err.Error())
+func (l *Logger) Error(ctx context.Context, err error, args ...any) {
+	l.ErrorContext(ctx, err.Error(), args...)
 }

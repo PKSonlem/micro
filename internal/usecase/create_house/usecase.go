@@ -1,22 +1,24 @@
 package create_house
 
 import (
+	"context"
+
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 )
 
 type Usecase struct {
-	repo   Repository
+	repo   repository
 	logger deps.Logger
 }
 
-func NewUsecase(repo Repository, logger deps.Logger) *Usecase {
+func NewUsecase(repo repository, logger deps.Logger) *Usecase {
 	return &Usecase{
 		repo:   repo,
 		logger: logger,
 	}
 }
 
-func (u *Usecase) Handle(house entity.House) error {
-	return u.repo.CreateHouse(house)
+func (u *Usecase) Handle(ctx context.Context, house entity.House) error {
+	return u.repo.CreateHouse(ctx, house)
 }

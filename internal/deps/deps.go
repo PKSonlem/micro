@@ -11,11 +11,7 @@ type Logger interface {
 	Error(ctx context.Context, err error, args ...any)
 }
 
-type TokenProvider interface {
-	GetToken(ctx context.Context) (string, error)
-	IsValid(ctx context.Context, token string) (bool, error)
-}
-
+// не имплементировано, нужно реализовать позже
 type RolesProvider interface {
 	RolesReader
 	RolesWriter

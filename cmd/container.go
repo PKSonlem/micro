@@ -4,16 +4,20 @@ import (
 	"context"
 	"log"
 
+	embPg "github.com/fergusstrange/embedded-postgres"
 	"github.com/jmoiron/sqlx"
+	"github.com/timurzdev/mentorship-test-task/migrations"
 )
 
 // контейне внешних зависимостей приложения
 // тут мы инициализируем все инфраструктурные зависимости
 type Container struct {
-	gCtx          context.Context
-	configuration *configuration
-	db            *sqlx.DB
-	logger        *Logger
+	gCtx             context.Context
+	configuration    *configuration
+	db               *sqlx.DB
+	embeddedPostgres *embPg.EmbeddedPostgres
+	migrator         *migrations.Migrator
+	logger           *Logger
 }
 
 func NewContainer() *Container {
@@ -47,10 +51,34 @@ func (e *Container) GetPostgres() *sqlx.DB {
 	return e.db
 }
 
+func (e *Container) GetEmbeddedPostgres() *embPg.EmbeddedPostgres {
+	if e.embeddedPostgres == nil {
+		e.embeddedPostgres = embPg.NewDatabase(
+			e.configuration.
+				GetPostgresConfiguration().
+				GetEmbeddedPostgresConfig(),
+		)
+	}
+
+	return e.embeddedPostgres
+}
+
 func (e *Container) GetLogger() *Logger {
 	if e.logger == nil {
 		e.logger = NewLogger()
 	}
 
 	return e.logger
+}
+
+func (e *Container) GetMigrator() *migrations.Migrator {
+	if e.migrator == nil {
+		e.migrator = migrations.NewMigrator(
+			e.configuration.
+				GetPostgresConfiguration().
+				GetMigrateConnectionString(),
+		)
+	}
+
+	return e.migrator
 }

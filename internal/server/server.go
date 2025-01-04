@@ -1,6 +1,9 @@
 package server
 
 import (
+	"context"
+	"log"
+	"net"
 	"net/http"
 
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
@@ -9,35 +12,74 @@ import (
 
 type Server struct {
 	createHouseHandler *create_house.Handler
+	address            string
 }
 
-func NewServer(chh *create_house.Handler) *Server {
-	return &Server{createHouseHandler: chh}
+func NewServer(address string, chh *create_house.Handler) *Server {
+	return &Server{
+		address:            address,
+		createHouseHandler: chh,
+	}
 }
 
-// (GET /dummyLogin)
-func (s *Server) GetDummyLogin(w http.ResponseWriter, r *http.Request, params generated.GetDummyLoginParams) {
+func (s *Server) Run(ctx context.Context) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	h := generated.HandlerFromMux(s, mux)
+
+	srv := &http.Server{
+		Handler: h,
+		Addr:    s.address,
+		BaseContext: func(l net.Listener) context.Context {
+			return ctx
+		},
+	}
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
-
-// (POST /flat/create)
-func (s *Server) PostFlatCreate(w http.ResponseWriter, r *http.Request) {}
-
-// (POST /flat/update)
-func (s *Server) PostFlatUpdate(w http.ResponseWriter, r *http.Request) {}
 
 // (POST /house/create)
 func (s *Server) PostHouseCreate(w http.ResponseWriter, r *http.Request) {
 	s.createHouseHandler.Handle(w, r)
 }
 
+// (GET /dummyLogin)
+func (s *Server) GetDummyLogin(w http.ResponseWriter, r *http.Request, params generated.GetDummyLoginParams) {
+	//not implemented
+}
+
+// (POST /flat/create)
+func (s *Server) PostFlatCreate(w http.ResponseWriter, r *http.Request) {
+	//not implemented
+}
+
+// (POST /flat/update)
+func (s *Server) PostFlatUpdate(w http.ResponseWriter, r *http.Request) {
+	//not implemented
+}
+
 // (GET /house/{id})
-func (s *Server) GetHouseId(w http.ResponseWriter, r *http.Request, id generated.HouseId) {}
+func (s *Server) GetHouseId(w http.ResponseWriter, r *http.Request, id generated.HouseId) {
+	//not implemented
+}
 
 // (POST /house/{id}/subscribe)
-func (s *Server) PostHouseIdSubscribe(w http.ResponseWriter, r *http.Request, id generated.HouseId) {}
+func (s *Server) PostHouseIdSubscribe(w http.ResponseWriter, r *http.Request, id generated.HouseId) {
+	//not implemented
+}
 
 // (POST /login)
-func (s *Server) PostLogin(w http.ResponseWriter, r *http.Request) {}
+func (s *Server) PostLogin(w http.ResponseWriter, r *http.Request) {
+	//not implemented
+}
 
 // (POST /register)
-func (s *Server) PostRegister(w http.ResponseWriter, r *http.Request) {}
+func (s *Server) PostRegister(w http.ResponseWriter, r *http.Request) {
+	//not implemented
+}

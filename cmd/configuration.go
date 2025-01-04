@@ -3,9 +3,14 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
+	"time"
+
+	embPg "github.com/fergusstrange/embedded-postgres"
 )
 
 const (
+	envPostgresDB                 = "POSTGRES_DB"
 	envPostgresHost               = "POSTGRES_HOST"
 	envPosrgresPort               = "POSTGRES_PORT"
 	envPostgresUser               = "POSTGRES_USER"
@@ -13,6 +18,9 @@ const (
 	envPostgresSslMode            = "POSTGRES_SSL_MODE"
 	envPostgresMaxIdleConnections = "POSTGRES_MAX_IDLE_CONNECTIONS"
 	envPostgresMaxOpenConnections = "POSTGRES_MAX_OPEN_CONNECTIONS"
+
+	envServerHost = "SERVER_HOST"
+	envServerPort = "SERVER_PORT"
 )
 
 func newFromEnv() *configuration {
@@ -24,9 +32,11 @@ func newFromEnv() *configuration {
 // структура для хранения конфигураций, под каждую новую зависимость переменные окружения парсятся тут
 type configuration struct {
 	postgresConfgiration *postgresConfiguration
+	serverConfiguration  *serverConfiguration
 }
 
 type postgresConfiguration struct {
+	db                 string
 	host               string
 	port               int64
 	user               string
@@ -34,6 +44,11 @@ type postgresConfiguration struct {
 	sslmode            string
 	maxIdleConnections int64
 	maxOpenConnections int64
+}
+
+type serverConfiguration struct {
+	host string
+	port int64
 }
 
 func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
@@ -47,7 +62,7 @@ func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
 			log.Fatal(err)
 		}
 
-		pc.host, err = getStringFromEnv(envPostgresUser)
+		pc.host, err = getStringFromEnv(envPostgresHost)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -64,6 +79,11 @@ func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
 
 		pc.sslmode = getStringFromEnvOrDefault(envPostgresSslMode, "disable")
 
+		pc.db, err = getStringFromEnv(envPostgresDB)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		pc.maxIdleConnections, err = getIntValueFromEnv(envPostgresMaxIdleConnections, 10)
 		if err != nil {
 			log.Fatal(err)
@@ -78,8 +98,30 @@ func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
 	return c.postgresConfgiration
 }
 
+func (pc *postgresConfiguration) GetEmbeddedPostgresConfig() embPg.Config {
+	return embPg.Config{}.
+		Database(pc.db).
+		Username(pc.user).
+		Password(pc.password).
+		Port(uint32(pc.port)).
+		Version(embPg.V16).
+		StartTimeout(time.Second * 15).
+		Logger(os.Stdout).
+		BinaryRepositoryURL("https://repo1.maven.org/maven2")
+}
+
 func (pc *postgresConfiguration) GetConnectionString() string {
-	return fmt.Sprintf("host=%s port=%d user=%s password=%s sslmode=%s", pc.host, pc.port, pc.user, pc.password, pc.sslmode)
+	return fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=%s",
+		pc.host,
+		pc.port,
+		pc.user,
+		pc.db,
+		pc.password,
+		pc.sslmode)
+}
+
+func (pc *postgresConfiguration) GetMigrateConnectionString() string {
+	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", pc.user, pc.password, pc.host, pc.db, pc.sslmode)
 }
 
 func (pc *postgresConfiguration) GetMaxIdleConns() int {
@@ -88,4 +130,25 @@ func (pc *postgresConfiguration) GetMaxIdleConns() int {
 
 func (pc *postgresConfiguration) GetMaxOpenConns() int {
 	return int(pc.maxOpenConnections)
+}
+
+func (c *configuration) GetServerConfiguration() *serverConfiguration {
+	if c.serverConfiguration == nil {
+		var err error
+		sc := &serverConfiguration{}
+		c.serverConfiguration = sc
+
+		sc.host = getStringFromEnvOrDefault(envServerHost, "localhost")
+
+		sc.port, err = getIntValueFromEnv(envServerPort, 8080)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return c.serverConfiguration
+}
+
+func (sc *serverConfiguration) GetAddress() string {
+	return fmt.Sprintf("%s:%d", sc.host, sc.port)
 }

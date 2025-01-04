@@ -11,7 +11,7 @@ func main() {
 	globalCtx := external.GetGlobalContext()
 	log := external.GetLogger()
 
-	ctx := log.WithTag(globalCtx, "cmd/service/main.go")
+	ctx := log.WithFields(globalCtx, map[string]string{"service": "cmd/service/main.go"})
 	log.Info(ctx, "logger initialized")
 
 	_ = internal.GetRepository(external.GetPostgres())

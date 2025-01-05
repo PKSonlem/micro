@@ -39,6 +39,7 @@ func (i *Internal) GetRepository() *repository.Repository {
 func (i *Internal) GetServer() *server.Server {
 	if i.server == nil {
 		i.server = server.NewServer(
+			i.GetLogger(),
 			i.configuration.GetServerConfiguration().GetAddress(),
 			i.GetCreateHouseHandler(),
 		)
@@ -49,7 +50,10 @@ func (i *Internal) GetServer() *server.Server {
 
 func (i *Internal) GetCreateHouseHandler() *create_house.Handler {
 	if i.createHouseHandler == nil {
-		i.createHouseHandler = create_house.NewHandler(i.GetCreateHouseUsecase())
+		i.createHouseHandler = create_house.NewHandler(
+			i.GetCreateHouseUsecase(),
+			i.GetLogger(),
+		)
 	}
 
 	return i.createHouseHandler
@@ -57,7 +61,7 @@ func (i *Internal) GetCreateHouseHandler() *create_house.Handler {
 
 func (i *Internal) GetCreateHouseUsecase() *create_house_usecase.Usecase {
 	if i.createHouseUsecase == nil {
-		i.createHouseUsecase = create_house_usecase.NewUsecase(i.GetRepository(), i.GetLogger())
+		i.createHouseUsecase = create_house_usecase.NewUsecase(i.GetRepository())
 	}
 
 	return i.createHouseUsecase

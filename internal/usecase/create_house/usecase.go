@@ -3,19 +3,16 @@ package create_house
 import (
 	"context"
 
-	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 )
 
 type Usecase struct {
-	repo   repository
-	logger deps.Logger
+	repo repository
 }
 
-func NewUsecase(repo repository, logger deps.Logger) *Usecase {
+func NewUsecase(repo repository) *Usecase {
 	return &Usecase{
-		repo:   repo,
-		logger: logger,
+		repo: repo,
 	}
 }
 

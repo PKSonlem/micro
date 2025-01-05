@@ -12,49 +12,52 @@ import (
 )
 
 type Handler struct {
-	roles   deps.RolesReader
+	// не имплементировано
+	// roles   deps.RolesReader
+
 	usecase *create_house.Usecase
+	logger  deps.Logger
 }
 
-func NewHandler(usecase *create_house.Usecase) *Handler {
+func NewHandler(
+	usecase *create_house.Usecase,
+	logger deps.Logger,
+) *Handler {
 	return &Handler{
 		usecase: usecase,
+		logger:  logger,
 	}
 }
 
 func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	role, err := h.roles.GetRole(ctx)
+	// TODO: добавить проверку роли
+	// role, err := h.roles.GetRole(ctx)
+	// if err != nil {
+	// 	handler.ErrorResponse(w, err)
+	// 	return
+	// }
+	//
+	// if !role.IsAdmin() {
+	// 	handler.ErrorResponse(w, handler.ErrNotFound)
+	// 	return
+	// }
+
+	var genReq generated.PostHouseCreateJSONBody
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&genReq)
 	if err != nil {
+		h.logger.Error(ctx, err)
 		handler.ErrorResponse(w, err)
-		return
-	}
-
-	if !role.IsAdmin() {
-		handler.ErrorResponse(w, handler.ErrNotFound)
-		return
-	}
-
-	var bodyBytes []byte
-	_, err = r.Body.Read(bodyBytes)
-	defer r.Body.Close()
-
-	if err != nil {
-		handler.ErrorResponse(w, err)
-	}
-
-	genReq := generated.PostHouseCreateJSONBody{}
-	err = json.Unmarshal(bodyBytes, &genReq)
-	if err != nil {
-		handler.ErrorResponse(w, err)
-		return
 	}
 
 	house := converters.HouseFromGen(genReq)
 
 	err = h.usecase.Handle(ctx, house)
 	if err != nil {
+		h.logger.Error(ctx, err)
 		handler.ErrorResponse(w, err)
 		return
 	}

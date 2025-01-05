@@ -2,23 +2,29 @@ package server
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
 
+	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/create_house"
 )
 
 type Server struct {
-	createHouseHandler *create_house.Handler
+	logger             deps.Logger
 	address            string
+	createHouseHandler *create_house.Handler
 }
 
-func NewServer(address string, chh *create_house.Handler) *Server {
+func NewServer(
+	log deps.Logger,
+	address string,
+	chh *create_house.Handler,
+) *Server {
 	return &Server{
 		address:            address,
 		createHouseHandler: chh,
+		logger:             log,
 	}
 }
 
@@ -40,7 +46,7 @@ func (s *Server) Run(ctx context.Context) {
 
 	err := srv.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		s.logger.Error(ctx, err)
 	}
 }
 

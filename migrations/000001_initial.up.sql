@@ -1,3 +1,4 @@
+--TODO: add unique constraint for address and year
 create table if not exists house (
     id serial primary key,
     address text not null,

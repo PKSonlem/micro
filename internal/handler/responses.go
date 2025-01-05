@@ -34,5 +34,4 @@ func ErrorResponse(w http.ResponseWriter, err error) {
 func SuccessResponse(w http.ResponseWriter, data []byte) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
-	w.WriteHeader(http.StatusOK)
 }

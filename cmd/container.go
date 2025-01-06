@@ -9,7 +9,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/migrations"
 )
 
-// контейне внешних зависимостей приложения
+// контейнер внешних зависимостей приложения
 // тут мы инициализируем все инфраструктурные зависимости
 type Container struct {
 	gCtx             context.Context

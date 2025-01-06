@@ -11,12 +11,12 @@ const (
 	codeError = 1
 )
 
+// точка входа в нашу программу
 func main() {
-	external := cmd.NewContainer()
-	internal := cmd.NewInternal(external)
+	container := cmd.NewInternal(cmd.NewContainer())
 
-	globalCtx := external.GetGlobalContext()
-	log := external.GetLogger()
+	globalCtx := container.GetGlobalContext()
+	log := container.GetLogger()
 
 	ctxFields := map[string]string{
 		"path": "cmd/service/main.go",
@@ -26,7 +26,7 @@ func main() {
 	ctx := log.WithFields(globalCtx, ctxFields)
 	log.Info(ctx, "logger initialized")
 
-	migrator := external.GetMigrator()
+	migrator := container.GetMigrator()
 	err := migrator.MigrateUp()
 	if err != nil {
 		log.Error(ctx, errors.Wrap(err, "error during migration"))
@@ -35,7 +35,7 @@ func main() {
 
 	log.Info(ctx, "successfull migration")
 
-	server := internal.GetServer()
-	// TODO: graceful shutdown
+	server := container.GetServer()
+	// TODO: реализовать graceful shutdown
 	server.Run(ctx)
 }

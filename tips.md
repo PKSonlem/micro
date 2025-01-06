@@ -10,6 +10,10 @@ set -a
 
 [link](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate)
 
+## install golang-cilint
+
+[link](https://golangci-lint.run/welcome/install/)
+
 
 ## create migration files
 ```sh

@@ -34,6 +34,7 @@ func (s *Server) Run(ctx context.Context) {
 		w.WriteHeader(http.StatusOK)
 	})
 
+	// биндим нашу структуру Server к роутам
 	h := generated.HandlerFromMux(s, mux)
 
 	srv := &http.Server{
@@ -44,6 +45,7 @@ func (s *Server) Run(ctx context.Context) {
 		},
 	}
 
+	// старт http сервера
 	err := srv.ListenAndServe()
 	if err != nil {
 		s.logger.Error(ctx, err)

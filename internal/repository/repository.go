@@ -1,3 +1,4 @@
+// В слое репозитория мы описываем работу с нашей базой данных
 package repository
 
 import (
@@ -13,6 +14,7 @@ type Repository struct {
 func NewRepository(conn *sqlx.DB) *Repository {
 	return &Repository{
 		conn: conn,
-		qb:   sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+		// инициализируем querybuilder тут, чтобы каждый раз не писать PlaceholderFormat(sq.Dollar)
+		qb: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }

@@ -1,6 +1,7 @@
 //go:build tools
 // +build tools
 
+// при запуске go generate ./generate.go мы генерируем модели и хттп сервер на основе openapi схемы, которую мы получили в задании
 package generate
 
 import (

@@ -11,6 +11,7 @@ import (
 
 type txFunc func(tx *sqlx.Tx) error
 
+// Обертка для транзакций, txFunc - это функция внутри которой должны быть вызовы атомарных методов репозитория
 func sqlxTransaction(ctx context.Context, db *sqlx.DB, f txFunc) error {
 	var txErr error
 

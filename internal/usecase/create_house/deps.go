@@ -8,5 +8,5 @@ import (
 
 //go:generate mockgen -source=deps.go -destination=mock/deps.go -package=mock
 type repository interface {
-	CreateHouse(ctx context.Context, flat entity.House) error
+	CreateHouse(ctx context.Context, flat entity.House) (*entity.House, error)
 }

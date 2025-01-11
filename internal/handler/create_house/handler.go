@@ -51,16 +51,20 @@ func (h *Handler) Handle(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error(ctx, err)
 		handler.ErrorResponse(w, err)
+		return
 	}
 
 	house := converters.HouseFromGen(genReq)
 
-	err = h.usecase.Handle(ctx, house)
+	res, err := h.usecase.Handle(ctx, house)
 	if err != nil {
 		h.logger.Error(ctx, err)
 		handler.ErrorResponse(w, err)
 		return
 	}
 
-	handler.SuccessResponse(w, nil)
+	genResp := converters.HouseToGen(*res)
+	bytes, _ := json.Marshal(genResp)
+
+	handler.SuccessResponse(w, bytes)
 }

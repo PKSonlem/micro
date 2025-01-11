@@ -28,7 +28,6 @@ func ErrorResponse(w http.ResponseWriter, err error) {
 	}
 
 	w.WriteHeader(http.StatusInternalServerError)
-	return
 }
 
 func SuccessResponse(w http.ResponseWriter, data []byte) {

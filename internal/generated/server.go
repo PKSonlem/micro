@@ -80,8 +80,8 @@ type House struct {
 	// Id Идентификатор дома
 	Id HouseId `json:"id"`
 
-	// UpdateAt Дата + время
-	UpdateAt *Date `json:"update_at,omitempty"`
+	// UpdatedAt Дата + время
+	UpdatedAt *Date `json:"updated_at,omitempty"`
 
 	// Year Год постройки дома
 	Year Year `json:"year"`

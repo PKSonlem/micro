@@ -57,7 +57,7 @@ func Test_CreateHouse(t *testing.T) {
 
 			// перед инициализацией репозиторию нужно запустить embeded postgres: db.Start()
 			repo := container.GetRepository()
-			err := repo.CreateHouse(container.GetGlobalContext(), tc.house)
+			_, err := repo.CreateHouse(container.GetGlobalContext(), tc.house)
 			if tc.wantErr {
 				assert.Equal(t, err, tc.expectedErr)
 				return

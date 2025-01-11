@@ -339,7 +339,7 @@ components:
           $ref: '#/components/schemas/Developer'
         created_at:
           $ref: '#/components/schemas/Date'
-        update_at:
+        updated_at:
           $ref: '#/components/schemas/Date'
     HouseId:
       type: integer

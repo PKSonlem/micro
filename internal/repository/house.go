@@ -15,15 +15,33 @@ const (
 	houseTable = "house"
 )
 
+type houseRow struct {
+	Id        int       `db:"id"`
+	Address   string    `db:"address"`
+	Year      int       `db:"year"`
+	Developer *string   `db:"developer"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 // действуем по простому правилу - экспортируемый метод - транзакция
-func (r *Repository) CreateHouse(ctx context.Context, house entity.House) error {
-	return sqlxTransaction(ctx, r.conn, func(tx *sqlx.Tx) error {
-		return r.createHouseTx(ctx, house, tx)
+func (r *Repository) CreateHouse(ctx context.Context, house entity.House) (*entity.House, error) {
+	var res *entity.House
+	var err, txErr error
+
+	txErr = sqlxTransaction(ctx, r.conn, func(tx *sqlx.Tx) error {
+		res, err = r.createHouseTx(ctx, house, tx)
+		return err
 	})
+	if txErr != nil {
+		return nil, txErr
+	}
+
+	return res, nil
 }
 
 // неэкспортируемый файл - атомраная операция, которую мы можем поместить в любую транзакцию
-func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *sqlx.Tx) error {
+func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *sqlx.Tx) (*entity.House, error) {
 	insertMap := map[string]interface{}{
 		"address":    house.Address,
 		"year":       house.Year,
@@ -39,16 +57,27 @@ func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *
 	sql, args, err := r.qb.
 		Insert(houseTable).
 		SetMap(insertMap).
+		Suffix("RETURNING *").
 		ToSql()
 
 	if err != nil {
-		return fmt.Errorf("error building query: %w", err)
+		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
-	_, err = tx.ExecContext(ctx, sql, args)
+	var row houseRow
+	err = tx.GetContext(ctx, &row, sql, args...)
 	if err != nil {
-		return errors.Join(entity.ErrorCreatingHouse, err)
+		return nil, errors.Join(entity.ErrorCreatingHouse, err)
 	}
 
-	return nil
+	result := &entity.House{
+		ID:        row.Id,
+		Address:   row.Address,
+		Year:      row.Year,
+		Developer: row.Developer,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
+	}
+
+	return result, nil
 }

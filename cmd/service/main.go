@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"github.com/timurzdev/mentorship-test-task/cmd"
 )
@@ -13,6 +14,9 @@ const (
 
 // точка входа в нашу программу
 func main() {
+	//загружаем в окружение переменные из .env файла
+	godotenv.Load()
+
 	container := cmd.NewInternal(cmd.NewContainer())
 
 	globalCtx := container.GetGlobalContext()

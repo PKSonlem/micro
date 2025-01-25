@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
-	"github.com/timurzdev/mentorship-test-task/internal/helpers"
+	"github.com/timurzdev/mentorship-test-task/internal/service/helpers"
 )
 
 func Test_HouseToGen(t *testing.T) {

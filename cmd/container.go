@@ -7,6 +7,7 @@ import (
 	embPg "github.com/fergusstrange/embedded-postgres"
 	"github.com/jmoiron/sqlx"
 	"github.com/timurzdev/mentorship-test-task/migrations"
+	"github.com/timurzdev/mentorship-test-task/pkg/logger"
 )
 
 // контейнер внешних зависимостей приложения
@@ -17,7 +18,7 @@ type Container struct {
 	db               *sqlx.DB
 	embeddedPostgres *embPg.EmbeddedPostgres
 	migrator         *migrations.Migrator
-	logger           *Logger
+	logger           *logger.Logger
 }
 
 func NewContainer() *Container {
@@ -63,9 +64,9 @@ func (e *Container) GetEmbeddedPostgres() *embPg.EmbeddedPostgres {
 	return e.embeddedPostgres
 }
 
-func (e *Container) GetLogger() *Logger {
+func (e *Container) GetLogger() *logger.Logger {
 	if e.logger == nil {
-		e.logger = NewLogger()
+		e.logger = logger.New()
 	}
 
 	return e.logger

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/timurzdev/mentorship-test-task/internal/handler/create_house"
+	"github.com/timurzdev/mentorship-test-task/internal/handler/server"
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
-	"github.com/timurzdev/mentorship-test-task/internal/server"
 	create_house_usecase "github.com/timurzdev/mentorship-test-task/internal/usecase/create_house"
 )
 

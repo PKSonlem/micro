@@ -1,4 +1,4 @@
-package cmd
+package logger
 
 import (
 	"context"
@@ -40,7 +40,7 @@ type Logger struct {
 	*slog.Logger
 }
 
-func NewLogger() *Logger {
+func New() *Logger {
 	jsonHandler := slog.NewJSONHandler(os.Stdout, nil)
 	contextHandler := newContextHandler(jsonHandler)
 	return &Logger{slog.New(&contextHandler)}

@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/timurzdev/mentorship-test-task/internal/converters"
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
 	"github.com/timurzdev/mentorship-test-task/internal/handler"
+	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
 	"github.com/timurzdev/mentorship-test-task/internal/usecase/create_house"
 )
 

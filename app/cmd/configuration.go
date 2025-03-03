@@ -121,7 +121,7 @@ func (pc *postgresConfiguration) GetConnectionString() string {
 }
 
 func (pc *postgresConfiguration) GetMigrateConnectionString() string {
-	return fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", pc.user, pc.password, pc.host, pc.db, pc.sslmode)
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", pc.user, pc.password, pc.host, pc.port, pc.db, pc.sslmode)
 }
 
 func (pc *postgresConfiguration) GetMaxIdleConns() int {

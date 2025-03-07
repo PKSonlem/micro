@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -11,6 +9,8 @@ services:
     env_file:
       - ./app/.env
     restart: unless-stopped
+    networks:
+      - general
   db:
     image: postgres:latest
     container_name: postgres
@@ -21,6 +21,8 @@ services:
       - ./app/.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - general
 
   prometheus:
     image: prom/prometheus:latest
@@ -30,7 +32,7 @@ services:
     ports:
       - "9090:9090"
     networks:
-      - monitoring
+      - general
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -40,7 +42,7 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
-      - monitoring
+      - general
     depends_on:
       - prometheus
     volumes:
@@ -51,5 +53,5 @@ volumes:
   postgres_data:
 
 networks:
-  monitoring:
+  general:
     driver: bridge

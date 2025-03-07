@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	envFilePath = "../../.env"
+	envFilePath = "../../.test.env"
 )
 
 func Test_CreateHouse(t *testing.T) {

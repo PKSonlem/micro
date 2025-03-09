@@ -1,10 +1,10 @@
 package token
 
 type TokenService struct {
-	key string
+	key []byte
 }
 
-func NewTokenService(key string) *TokenService {
+func NewTokenService(key []byte) *TokenService {
 	return &TokenService{key: key}
 }
 

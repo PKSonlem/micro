@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package notification;
+
+option go_package = "/pkg/proto";
+import "google/protobuf/timestamp.proto";
+
+message Notification {
+  google.protobuf.Timestamp created_at = 1;
+  int32 flat_id = 2;
+  int32 house_id = 3;
+  NotificationType type = 4;
+  HouseData house_data = 5;
+
+  message UserData {
+    string email = 1;
+    string role = 2;
+  }
+}
+
+message HouseData {
+  string address = 1;
+  int32 year = 2;
+  optional string developer = 3;
+}
+
+enum NotificationType {
+  NOTIFICATION_FLAT_CREATED = 0;
+  NOTIFICATION_USER_REGISTERED = 1;
+}
+
+enum NotificationStatus {
+  STATUS_CREATED = 0;
+  STATUS_FAILED = 1;
+}
+
+message NotificationResponse {
+  NotificationStatus status = 1;
+  optional string message = 2;
+}
+
+service NotificationService {
+  rpc Send(Notification) returns (NotificationResponse) {};
+}

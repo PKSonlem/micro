@@ -23,14 +23,5 @@ type Metrics interface {
 
 // не имплементировано, нужно реализовать позже
 type RolesProvider interface {
-	RolesReader
-	RolesWriter
-}
-
-type RolesReader interface {
 	GetRole(ctx context.Context) (entity.Role, error)
-}
-
-type RolesWriter interface {
-	SetRole(ctx context.Context, role entity.Role) error
 }

@@ -31,8 +31,8 @@ func newFromEnv() *configuration {
 
 // структура для хранения конфигураций, под каждую новую зависимость переменные окружения парсятся тут
 type configuration struct {
-	postgresConfgiration *postgresConfiguration
-	serverConfiguration  *serverConfiguration
+	postgresConfiguration *postgresConfiguration
+	serverConfiguration   *serverConfiguration
 }
 
 type postgresConfiguration struct {
@@ -52,10 +52,10 @@ type serverConfiguration struct {
 }
 
 func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
-	if c.postgresConfgiration == nil {
+	if c.postgresConfiguration == nil {
 		var err error
 		pc := &postgresConfiguration{}
-		c.postgresConfgiration = pc
+		c.postgresConfiguration = pc
 
 		pc.user, err = getStringFromEnv(envPostgresUser)
 		if err != nil {
@@ -95,7 +95,7 @@ func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
 		}
 	}
 
-	return c.postgresConfgiration
+	return c.postgresConfiguration
 }
 
 func (pc *postgresConfiguration) GetEmbeddedPostgresConfig() embPg.Config {

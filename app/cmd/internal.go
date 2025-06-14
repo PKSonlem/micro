@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"github.com/timurzdev/mentorship-test-task/internal/handler/create_house"
+	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/server"
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
-	create_house_usecase "github.com/timurzdev/mentorship-test-task/internal/usecase/create_house"
+	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
 )
 
 // контейнер внутренних зависимостей
@@ -19,10 +19,10 @@ type Internal struct {
 	server *server.Server
 
 	//handlers
-	createHouseHandler *create_house.Handler
+	createHouseHandler *househandler.Handler
 
 	//usecases
-	createHouseUsecase *create_house_usecase.Usecase
+	createHouseUsecase *houseusecases.Usecase
 
 	//middlewares
 	prometheusMiddleware *prometheus.Middleware
@@ -45,7 +45,7 @@ func (i *Internal) GetServer() *server.Server {
 		i.server = server.NewServer(
 			i.GetLogger(),
 			i.configuration.GetServerConfiguration().GetAddress(),
-			i.GetCreateHouseHandler(),
+			i.GetHouseHandler(),
 			i.GetPrometheusMiddleware(),
 		)
 	}
@@ -53,10 +53,10 @@ func (i *Internal) GetServer() *server.Server {
 	return i.server
 }
 
-func (i *Internal) GetCreateHouseHandler() *create_house.Handler {
+func (i *Internal) GetHouseHandler() *househandler.Handler {
 	if i.createHouseHandler == nil {
-		i.createHouseHandler = create_house.NewHandler(
-			i.GetCreateHouseUsecase(),
+		i.createHouseHandler = househandler.NewHandler(
+			i.GetHouseUsecases(),
 			i.GetLogger(),
 		)
 	}
@@ -64,9 +64,9 @@ func (i *Internal) GetCreateHouseHandler() *create_house.Handler {
 	return i.createHouseHandler
 }
 
-func (i *Internal) GetCreateHouseUsecase() *create_house_usecase.Usecase {
+func (i *Internal) GetHouseUsecases() *houseusecases.Usecase {
 	if i.createHouseUsecase == nil {
-		i.createHouseUsecase = create_house_usecase.NewUsecase(i.GetRepository())
+		i.createHouseUsecase = houseusecases.NewUsecase(i.GetRepository())
 	}
 
 	return i.createHouseUsecase

@@ -1,4 +1,4 @@
-package create_house
+package house
 
 import (
 	"encoding/json"
@@ -10,19 +10,19 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
 	"github.com/timurzdev/mentorship-test-task/internal/handler"
 	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
-	"github.com/timurzdev/mentorship-test-task/internal/usecase/create_house"
+	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
 )
 
 type Handler struct {
 	// не имплементировано
 	// roles   deps.RolesReader
 
-	usecase *create_house.Usecase
+	usecase *houseusecases.Usecase
 	logger  deps.Logger
 }
 
 func NewHandler(
-	usecase *create_house.Usecase,
+	usecase *houseusecases.Usecase,
 	logger deps.Logger,
 ) *Handler {
 	return &Handler{

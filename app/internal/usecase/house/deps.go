@@ -1,4 +1,4 @@
-package create_house
+package house
 
 import (
 	"context"

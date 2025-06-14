@@ -1,13 +1,13 @@
 services:
   app:
     build:
-      context: ./app
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: ./deploy/common/Dockerfile
     container_name: app
     ports:
       - "${SERVER_PORT}:8080"
     env_file:
-      - path: ./app/.env
+      - path: ./.env
     restart: unless-stopped
     networks:
       - general
@@ -20,9 +20,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "5439:5432"
     env_file:
-      - path: ./app/.env
+      - path: ./.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:

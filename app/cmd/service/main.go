@@ -15,7 +15,7 @@ const (
 // точка входа в нашу программу
 func main() {
 	//загружаем в окружение переменные из .env файла
-	godotenv.Load()
+	godotenv.Load("./deploy/local/.env")
 
 	container := cmd.NewInternal(cmd.NewContainer())
 

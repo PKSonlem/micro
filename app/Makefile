@@ -15,3 +15,11 @@ install:
 .PHONY: generate
 generate:
 	go generate ./...
+
+.PHONY: up
+up:
+	docker compose -f ./deploy/local/docker-compose.yml up -d --build --quiet-pull 
+
+.PHONY: down
+down:
+	docker compose -f ./deploy/local/docker-compose.yml down 

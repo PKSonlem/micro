@@ -8,14 +8,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
-	"github.com/timurzdev/mentorship-test-task/internal/handler/create_house"
+	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
 )
 
 type Server struct {
-	logger             deps.Logger
-	address            string
-	createHouseHandler *create_house.Handler
+	logger       deps.Logger
+	address      string
+	houseHandler *househandler.Handler
 
 	prometheusMiddleware *prometheus.Middleware
 }
@@ -23,12 +23,12 @@ type Server struct {
 func NewServer(
 	log deps.Logger,
 	address string,
-	chh *create_house.Handler,
+	chh *househandler.Handler,
 	prometheusMiddleware *prometheus.Middleware,
 ) *Server {
 	return &Server{
 		address:              address,
-		createHouseHandler:   chh,
+		houseHandler:         chh,
 		logger:               log,
 		prometheusMiddleware: prometheusMiddleware,
 	}
@@ -67,7 +67,7 @@ func (s *Server) Run(ctx context.Context) {
 
 // (POST /house/create)
 func (s *Server) PostHouseCreate(w http.ResponseWriter, r *http.Request) {
-	s.createHouseHandler.Handle(w, r)
+	s.houseHandler.Handle(w, r)
 }
 
 // (GET /dummyLogin)

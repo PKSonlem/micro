@@ -19,6 +19,24 @@ func sqlxTransaction(ctx context.Context, db *sqlx.DB, f txFunc) error {
 	if err != nil {
 		return fmt.Errorf("error creating transaction: %w", err)
 	}
+	defer func() {
+		if r := recover(); r != nil {
+			txErr = tx.Rollback()
+			if txErr != nil {
+				txErr = errors.Join(txErr, fmt.Errorf("panic in txFunc: %v", r))
+			} else {
+				txErr = fmt.Errorf("panic in txFunc: %v", r)
+			}
+
+			if rbErr := tx.Rollback(); rbErr != nil {
+				txErr = errors.Join(txErr, fmt.Errorf("rollback failed after panic: %w", rbErr))
+			}
+		} else if txErr != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				txErr = errors.Join(txErr, fmt.Errorf("rollback failed: %w", rbErr))
+			}
+		}
+	}()
 
 	err = f(tx)
 	if err != nil {

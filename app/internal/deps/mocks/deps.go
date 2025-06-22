@@ -197,93 +197,17 @@ func (mr *MockRolesProviderMockRecorder) GetRole(ctx any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRole", reflect.TypeOf((*MockRolesProvider)(nil).GetRole), ctx)
 }
 
-// SetRole mocks base method.
-func (m *MockRolesProvider) SetRole(ctx context.Context, role entity.Role) error {
+// GetUserID mocks base method.
+func (m *MockRolesProvider) GetUserID(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetRole", ctx, role)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetRole indicates an expected call of SetRole.
-func (mr *MockRolesProviderMockRecorder) SetRole(ctx, role any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRole", reflect.TypeOf((*MockRolesProvider)(nil).SetRole), ctx, role)
-}
-
-// MockRolesReader is a mock of RolesReader interface.
-type MockRolesReader struct {
-	ctrl     *gomock.Controller
-	recorder *MockRolesReaderMockRecorder
-	isgomock struct{}
-}
-
-// MockRolesReaderMockRecorder is the mock recorder for MockRolesReader.
-type MockRolesReaderMockRecorder struct {
-	mock *MockRolesReader
-}
-
-// NewMockRolesReader creates a new mock instance.
-func NewMockRolesReader(ctrl *gomock.Controller) *MockRolesReader {
-	mock := &MockRolesReader{ctrl: ctrl}
-	mock.recorder = &MockRolesReaderMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRolesReader) EXPECT() *MockRolesReaderMockRecorder {
-	return m.recorder
-}
-
-// GetRole mocks base method.
-func (m *MockRolesReader) GetRole(ctx context.Context) (entity.Role, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRole", ctx)
-	ret0, _ := ret[0].(entity.Role)
+	ret := m.ctrl.Call(m, "GetUserID", ctx)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetRole indicates an expected call of GetRole.
-func (mr *MockRolesReaderMockRecorder) GetRole(ctx any) *gomock.Call {
+// GetUserID indicates an expected call of GetUserID.
+func (mr *MockRolesProviderMockRecorder) GetUserID(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRole", reflect.TypeOf((*MockRolesReader)(nil).GetRole), ctx)
-}
-
-// MockRolesWriter is a mock of RolesWriter interface.
-type MockRolesWriter struct {
-	ctrl     *gomock.Controller
-	recorder *MockRolesWriterMockRecorder
-	isgomock struct{}
-}
-
-// MockRolesWriterMockRecorder is the mock recorder for MockRolesWriter.
-type MockRolesWriterMockRecorder struct {
-	mock *MockRolesWriter
-}
-
-// NewMockRolesWriter creates a new mock instance.
-func NewMockRolesWriter(ctrl *gomock.Controller) *MockRolesWriter {
-	mock := &MockRolesWriter{ctrl: ctrl}
-	mock.recorder = &MockRolesWriterMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRolesWriter) EXPECT() *MockRolesWriterMockRecorder {
-	return m.recorder
-}
-
-// SetRole mocks base method.
-func (m *MockRolesWriter) SetRole(ctx context.Context, role entity.Role) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetRole", ctx, role)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetRole indicates an expected call of SetRole.
-func (mr *MockRolesWriterMockRecorder) SetRole(ctx, role any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRole", reflect.TypeOf((*MockRolesWriter)(nil).SetRole), ctx, role)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserID", reflect.TypeOf((*MockRolesProvider)(nil).GetUserID), ctx)
 }

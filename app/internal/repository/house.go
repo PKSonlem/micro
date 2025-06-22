@@ -16,7 +16,7 @@ const (
 )
 
 type houseRow struct {
-	Id        int       `db:"id"`
+	ID        int       `db:"id"`
 	Address   string    `db:"address"`
 	Year      int       `db:"year"`
 	Developer *string   `db:"developer"`
@@ -71,7 +71,7 @@ func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *
 	}
 
 	result := &entity.House{
-		ID:        row.Id,
+		ID:        row.ID,
 		Address:   row.Address,
 		Year:      row.Year,
 		Developer: row.Developer,

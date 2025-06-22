@@ -2,105 +2,187 @@ package server
 
 import (
 	"context"
-	"net"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
+	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
+	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
 )
 
+// Server реализует StrictServerInterface
 type Server struct {
-	logger       deps.Logger
-	address      string
-	houseHandler *househandler.Handler
-
-	prometheusMiddleware *prometheus.Middleware
+	logger         deps.Logger
+	addr           string
+	server         *http.Server
+	houseHandler   *househandler.Handler
+	authHandler    *authhandler.Handler
+	promMiddleware *prometheus.Middleware
+	authMiddleware *auth.Middleware
 }
 
 func NewServer(
-	log deps.Logger,
-	address string,
-	chh *househandler.Handler,
-	prometheusMiddleware *prometheus.Middleware,
+	logger deps.Logger,
+	addr string,
+	houseHandler *househandler.Handler,
+	authHandler *authhandler.Handler,
+	promMiddleware *prometheus.Middleware,
+	authMiddleware *auth.Middleware,
 ) *Server {
-	return &Server{
-		address:              address,
-		houseHandler:         chh,
-		logger:               log,
-		prometheusMiddleware: prometheusMiddleware,
+	s := &Server{
+		logger:         logger,
+		addr:           addr,
+		houseHandler:   houseHandler,
+		authHandler:    authHandler,
+		promMiddleware: promMiddleware,
+		authMiddleware: authMiddleware,
 	}
-}
 
-func (s *Server) Run(ctx context.Context) {
+	// Создаем мультиплексор
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+
+	// Регистрируем обработчики для метрик
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	mux.Handle("GET /metrics", promhttp.Handler())
+	// Создаем strict handler для API
+	strictHandler := generated.NewStrictHandler(s, nil)
 
-	// биндим нашу структуру Server к роутам
-	h := generated.HandlerWithOptions(s, generated.StdHTTPServerOptions{
-		BaseRouter: mux,
-		Middlewares: []generated.MiddlewareFunc{
-			s.prometheusMiddleware.Handle,
-		},
-	})
+	// Применяем middleware в правильном порядке:
+	// 1. Prometheus middleware для всех запросов
+	// 2. Auth middleware (которая уже содержит логику исключений)
+	// 3. Generated handler
+	handler := generated.Handler(strictHandler)
+	handler = s.authMiddleware.Apply(handler)
+	handler = s.promMiddleware.Handle(handler)
 
-	srv := &http.Server{
-		Handler: h,
-		Addr:    s.address,
-		BaseContext: func(l net.Listener) context.Context {
-			return ctx
-		},
+	// Регистрируем обработчик API
+	mux.Handle("/", handler)
+
+	s.server = &http.Server{
+		Addr:    addr,
+		Handler: mux,
 	}
 
-	// старт http сервера
-	err := srv.ListenAndServe()
-	if err != nil {
+	return s
+}
+
+func (s *Server) Run(ctx context.Context) {
+	s.logger.Info(ctx, "server starting", "address", s.addr)
+
+	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		s.logger.Error(ctx, err)
 	}
 }
 
-// (POST /house/create)
-func (s *Server) PostHouseCreate(w http.ResponseWriter, r *http.Request) {
-	s.houseHandler.Handle(w, r)
+// Shutdown останавливает сервер
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }
 
-// (GET /dummyLogin)
-func (s *Server) GetDummyLogin(w http.ResponseWriter, r *http.Request, params generated.GetDummyLoginParams) {
-	//not implemented
+// Реализация StrictServerInterface
+
+// PostHouseCreate делегирует обработку в house handler
+func (s *Server) PostHouseCreate(ctx context.Context, request generated.PostHouseCreateRequestObject) (generated.PostHouseCreateResponseObject, error) {
+	return s.houseHandler.CreateHouse(ctx, request)
 }
 
-// (POST /flat/create)
-func (s *Server) PostFlatCreate(w http.ResponseWriter, r *http.Request) {
-	//not implemented
+// GetDummyLogin делегирует обработку в auth handler
+func (s *Server) GetDummyLogin(ctx context.Context, request generated.GetDummyLoginRequestObject) (generated.GetDummyLoginResponseObject, error) {
+	return s.authHandler.GetDummyLogin(ctx, request)
 }
 
-// (POST /flat/update)
-func (s *Server) PostFlatUpdate(w http.ResponseWriter, r *http.Request) {
-	//not implemented
+// PostFlatCreate - заглушка
+func (s *Server) PostFlatCreate(ctx context.Context, request generated.PostFlatCreateRequestObject) (generated.PostFlatCreateResponseObject, error) {
+	return generated.PostFlatCreate500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
 }
 
-// (GET /house/{id})
-func (s *Server) GetHouseId(w http.ResponseWriter, r *http.Request, id generated.HouseId) {
-	//not implemented
+// PostFlatUpdate - заглушка
+func (s *Server) PostFlatUpdate(ctx context.Context, request generated.PostFlatUpdateRequestObject) (generated.PostFlatUpdateResponseObject, error) {
+	return generated.PostFlatUpdate500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
 }
 
-// (POST /house/{id}/subscribe)
-func (s *Server) PostHouseIdSubscribe(w http.ResponseWriter, r *http.Request, id generated.HouseId) {
-	//not implemented
+// GetHouseId - заглушка
+func (s *Server) GetHouseId(ctx context.Context, request generated.GetHouseIdRequestObject) (generated.GetHouseIdResponseObject, error) {
+	return generated.GetHouseId500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
 }
 
-// (POST /login)
-func (s *Server) PostLogin(w http.ResponseWriter, r *http.Request) {
-	//not implemented
+// PostHouseIdSubscribe - заглушка
+func (s *Server) PostHouseIdSubscribe(ctx context.Context, request generated.PostHouseIdSubscribeRequestObject) (generated.PostHouseIdSubscribeResponseObject, error) {
+	return generated.PostHouseIdSubscribe500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
 }
 
-// (POST /register)
-func (s *Server) PostRegister(w http.ResponseWriter, r *http.Request) {
-	//not implemented
+// PostLogin - заглушка
+func (s *Server) PostLogin(ctx context.Context, request generated.PostLoginRequestObject) (generated.PostLoginResponseObject, error) {
+	return generated.PostLogin500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
+}
+
+// PostRegister - заглушка
+func (s *Server) PostRegister(ctx context.Context, request generated.PostRegisterRequestObject) (generated.PostRegisterResponseObject, error) {
+	return generated.PostRegister500JSONResponse{
+		N5xxJSONResponse: generated.N5xxJSONResponse{
+			Body: struct {
+				Code      *int    `json:"code,omitempty"`
+				Message   string  `json:"message"`
+				RequestId *string `json:"request_id,omitempty"`
+			}{
+				Message: "Not implemented",
+			},
+		},
+	}, nil
 }

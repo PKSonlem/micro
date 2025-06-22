@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // PostgreSQL driver for migrations
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
@@ -16,13 +16,13 @@ type Migrator struct {
 	*migrate.Migrate
 }
 
-func NewMigrator(databaseUrl string) *Migrator {
+func NewMigrator(databaseURL string) *Migrator {
 	d, err := iofs.New(fs, ".")
 	if err != nil {
 		panic(err)
 	}
 
-	m, err := migrate.NewWithSourceInstance("iofs", d, databaseUrl)
+	m, err := migrate.NewWithSourceInstance("iofs", d, databaseURL)
 	if err != nil {
 		panic(err)
 	}
@@ -40,5 +40,5 @@ func (m *Migrator) MigrateUp() error {
 }
 
 func (m *Migrator) MigrateDown() error {
-	return m.MigrateDown()
+	return m.Down()
 }

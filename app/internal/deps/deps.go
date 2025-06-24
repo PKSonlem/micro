@@ -21,7 +21,8 @@ type Metrics interface {
 	GetHistogram(key string) (*prometheus.HistogramVec, error)
 }
 
-// не имплементировано, нужно реализовать позже
+// RolesProvider интерфейс для работы с ролями пользователей
 type RolesProvider interface {
 	GetRole(ctx context.Context) (entity.Role, error)
+	GetUserID(ctx context.Context) (string, error)
 }

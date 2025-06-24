@@ -6,3 +6,4 @@ grafana/runtime-data/
 !grafana/runtime-data/grafana.db
 
 .DS_Store
+app/deploy/local/grafana/runtime-data

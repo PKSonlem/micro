@@ -7,11 +7,13 @@ package generated
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -560,4 +562,646 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/register", wrapper.PostRegister)
 
 	return m
+}
+
+type N400Response struct {
+}
+
+type N401Response struct {
+}
+
+type N5xxResponseHeaders struct {
+	RetryAfter int
+}
+type N5xxJSONResponse struct {
+	Body struct {
+		// Code Код ошибки. Предназначен для классификации проблем и более быстрого решения проблем.
+		Code *int `json:"code,omitempty"`
+
+		// Message Описание ошибки
+		Message string `json:"message"`
+
+		// RequestId Идентификатор запроса. Предназначен для более быстрого поиска проблем.
+		RequestId *string `json:"request_id,omitempty"`
+	}
+
+	Headers N5xxResponseHeaders
+}
+
+type GetDummyLoginRequestObject struct {
+	Params GetDummyLoginParams
+}
+
+type GetDummyLoginResponseObject interface {
+	VisitGetDummyLoginResponse(w http.ResponseWriter) error
+}
+
+type GetDummyLogin200JSONResponse struct {
+	// Token Авторизационный токен
+	Token *Token `json:"token,omitempty"`
+}
+
+func (response GetDummyLogin200JSONResponse) VisitGetDummyLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetDummyLogin500JSONResponse struct{ N5xxJSONResponse }
+
+func (response GetDummyLogin500JSONResponse) VisitGetDummyLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostFlatCreateRequestObject struct {
+	Body *PostFlatCreateJSONRequestBody
+}
+
+type PostFlatCreateResponseObject interface {
+	VisitPostFlatCreateResponse(w http.ResponseWriter) error
+}
+
+type PostFlatCreate200JSONResponse Flat
+
+func (response PostFlatCreate200JSONResponse) VisitPostFlatCreateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostFlatCreate400Response = N400Response
+
+func (response PostFlatCreate400Response) VisitPostFlatCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostFlatCreate401Response = N401Response
+
+func (response PostFlatCreate401Response) VisitPostFlatCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostFlatCreate500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostFlatCreate500JSONResponse) VisitPostFlatCreateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostFlatUpdateRequestObject struct {
+	Body *PostFlatUpdateJSONRequestBody
+}
+
+type PostFlatUpdateResponseObject interface {
+	VisitPostFlatUpdateResponse(w http.ResponseWriter) error
+}
+
+type PostFlatUpdate200JSONResponse Flat
+
+func (response PostFlatUpdate200JSONResponse) VisitPostFlatUpdateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostFlatUpdate400Response = N400Response
+
+func (response PostFlatUpdate400Response) VisitPostFlatUpdateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostFlatUpdate401Response = N401Response
+
+func (response PostFlatUpdate401Response) VisitPostFlatUpdateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostFlatUpdate500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostFlatUpdate500JSONResponse) VisitPostFlatUpdateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostHouseCreateRequestObject struct {
+	Body *PostHouseCreateJSONRequestBody
+}
+
+type PostHouseCreateResponseObject interface {
+	VisitPostHouseCreateResponse(w http.ResponseWriter) error
+}
+
+type PostHouseCreate200JSONResponse House
+
+func (response PostHouseCreate200JSONResponse) VisitPostHouseCreateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostHouseCreate400Response = N400Response
+
+func (response PostHouseCreate400Response) VisitPostHouseCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostHouseCreate401Response = N401Response
+
+func (response PostHouseCreate401Response) VisitPostHouseCreateResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostHouseCreate500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostHouseCreate500JSONResponse) VisitPostHouseCreateResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetHouseIdRequestObject struct {
+	Id HouseId `json:"id"`
+}
+
+type GetHouseIdResponseObject interface {
+	VisitGetHouseIdResponse(w http.ResponseWriter) error
+}
+
+type GetHouseId200JSONResponse struct {
+	Flats []Flat `json:"flats"`
+}
+
+func (response GetHouseId200JSONResponse) VisitGetHouseIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetHouseId400Response = N400Response
+
+func (response GetHouseId400Response) VisitGetHouseIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type GetHouseId401Response = N401Response
+
+func (response GetHouseId401Response) VisitGetHouseIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetHouseId500JSONResponse struct{ N5xxJSONResponse }
+
+func (response GetHouseId500JSONResponse) VisitGetHouseIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostHouseIdSubscribeRequestObject struct {
+	Id   HouseId `json:"id"`
+	Body *PostHouseIdSubscribeJSONRequestBody
+}
+
+type PostHouseIdSubscribeResponseObject interface {
+	VisitPostHouseIdSubscribeResponse(w http.ResponseWriter) error
+}
+
+type PostHouseIdSubscribe200Response struct {
+}
+
+func (response PostHouseIdSubscribe200Response) VisitPostHouseIdSubscribeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type PostHouseIdSubscribe400Response = N400Response
+
+func (response PostHouseIdSubscribe400Response) VisitPostHouseIdSubscribeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostHouseIdSubscribe401Response = N401Response
+
+func (response PostHouseIdSubscribe401Response) VisitPostHouseIdSubscribeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type PostHouseIdSubscribe500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostHouseIdSubscribe500JSONResponse) VisitPostHouseIdSubscribeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostLoginRequestObject struct {
+	Body *PostLoginJSONRequestBody
+}
+
+type PostLoginResponseObject interface {
+	VisitPostLoginResponse(w http.ResponseWriter) error
+}
+
+type PostLogin200JSONResponse struct {
+	// Token Авторизационный токен
+	Token *Token `json:"token,omitempty"`
+}
+
+func (response PostLogin200JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLogin400Response struct {
+}
+
+func (response PostLogin400Response) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostLogin404Response struct {
+}
+
+func (response PostLogin404Response) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.WriteHeader(404)
+	return nil
+}
+
+type PostLogin500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostLogin500JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PostRegisterRequestObject struct {
+	Body *PostRegisterJSONRequestBody
+}
+
+type PostRegisterResponseObject interface {
+	VisitPostRegisterResponse(w http.ResponseWriter) error
+}
+
+type PostRegister200JSONResponse struct {
+	// UserId Идентификатор пользователя
+	UserId *UserId `json:"user_id,omitempty"`
+}
+
+func (response PostRegister200JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostRegister400Response struct {
+}
+
+func (response PostRegister400Response) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.WriteHeader(400)
+	return nil
+}
+
+type PostRegister500JSONResponse struct{ N5xxJSONResponse }
+
+func (response PostRegister500JSONResponse) VisitPostRegisterResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Retry-After", fmt.Sprint(response.Headers.RetryAfter))
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+
+	// (GET /dummyLogin)
+	GetDummyLogin(ctx context.Context, request GetDummyLoginRequestObject) (GetDummyLoginResponseObject, error)
+
+	// (POST /flat/create)
+	PostFlatCreate(ctx context.Context, request PostFlatCreateRequestObject) (PostFlatCreateResponseObject, error)
+
+	// (POST /flat/update)
+	PostFlatUpdate(ctx context.Context, request PostFlatUpdateRequestObject) (PostFlatUpdateResponseObject, error)
+
+	// (POST /house/create)
+	PostHouseCreate(ctx context.Context, request PostHouseCreateRequestObject) (PostHouseCreateResponseObject, error)
+
+	// (GET /house/{id})
+	GetHouseId(ctx context.Context, request GetHouseIdRequestObject) (GetHouseIdResponseObject, error)
+
+	// (POST /house/{id}/subscribe)
+	PostHouseIdSubscribe(ctx context.Context, request PostHouseIdSubscribeRequestObject) (PostHouseIdSubscribeResponseObject, error)
+
+	// (POST /login)
+	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
+
+	// (POST /register)
+	PostRegister(ctx context.Context, request PostRegisterRequestObject) (PostRegisterResponseObject, error)
+}
+
+type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
+type StrictMiddlewareFunc = strictnethttp.StrictHTTPMiddlewareFunc
+
+type StrictHTTPServerOptions struct {
+	RequestErrorHandlerFunc  func(w http.ResponseWriter, r *http.Request, err error)
+	ResponseErrorHandlerFunc func(w http.ResponseWriter, r *http.Request, err error)
+}
+
+func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions{
+		RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		},
+		ResponseErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		},
+	}}
+}
+
+func NewStrictHandlerWithOptions(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc, options StrictHTTPServerOptions) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares, options: options}
+}
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+	options     StrictHTTPServerOptions
+}
+
+// GetDummyLogin operation middleware
+func (sh *strictHandler) GetDummyLogin(w http.ResponseWriter, r *http.Request, params GetDummyLoginParams) {
+	var request GetDummyLoginRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetDummyLogin(ctx, request.(GetDummyLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetDummyLogin")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetDummyLoginResponseObject); ok {
+		if err := validResponse.VisitGetDummyLoginResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostFlatCreate operation middleware
+func (sh *strictHandler) PostFlatCreate(w http.ResponseWriter, r *http.Request) {
+	var request PostFlatCreateRequestObject
+
+	var body PostFlatCreateJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostFlatCreate(ctx, request.(PostFlatCreateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostFlatCreate")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostFlatCreateResponseObject); ok {
+		if err := validResponse.VisitPostFlatCreateResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostFlatUpdate operation middleware
+func (sh *strictHandler) PostFlatUpdate(w http.ResponseWriter, r *http.Request) {
+	var request PostFlatUpdateRequestObject
+
+	var body PostFlatUpdateJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostFlatUpdate(ctx, request.(PostFlatUpdateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostFlatUpdate")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostFlatUpdateResponseObject); ok {
+		if err := validResponse.VisitPostFlatUpdateResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostHouseCreate operation middleware
+func (sh *strictHandler) PostHouseCreate(w http.ResponseWriter, r *http.Request) {
+	var request PostHouseCreateRequestObject
+
+	var body PostHouseCreateJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostHouseCreate(ctx, request.(PostHouseCreateRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostHouseCreate")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostHouseCreateResponseObject); ok {
+		if err := validResponse.VisitPostHouseCreateResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetHouseId operation middleware
+func (sh *strictHandler) GetHouseId(w http.ResponseWriter, r *http.Request, id HouseId) {
+	var request GetHouseIdRequestObject
+
+	request.Id = id
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetHouseId(ctx, request.(GetHouseIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetHouseId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetHouseIdResponseObject); ok {
+		if err := validResponse.VisitGetHouseIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostHouseIdSubscribe operation middleware
+func (sh *strictHandler) PostHouseIdSubscribe(w http.ResponseWriter, r *http.Request, id HouseId) {
+	var request PostHouseIdSubscribeRequestObject
+
+	request.Id = id
+
+	var body PostHouseIdSubscribeJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostHouseIdSubscribe(ctx, request.(PostHouseIdSubscribeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostHouseIdSubscribe")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostHouseIdSubscribeResponseObject); ok {
+		if err := validResponse.VisitPostHouseIdSubscribeResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostLogin operation middleware
+func (sh *strictHandler) PostLogin(w http.ResponseWriter, r *http.Request) {
+	var request PostLoginRequestObject
+
+	var body PostLoginJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostLogin(ctx, request.(PostLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostLogin")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostLoginResponseObject); ok {
+		if err := validResponse.VisitPostLoginResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostRegister operation middleware
+func (sh *strictHandler) PostRegister(w http.ResponseWriter, r *http.Request) {
+	var request PostRegisterRequestObject
+
+	var body PostRegisterJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PostRegister(ctx, request.(PostRegisterRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostRegister")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PostRegisterResponseObject); ok {
+		if err := validResponse.VisitPostRegisterResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
 }

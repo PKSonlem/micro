@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	embPg "github.com/fergusstrange/embedded-postgres"
@@ -21,18 +19,81 @@ const (
 
 	envServerHost = "SERVER_HOST"
 	envServerPort = "SERVER_PORT"
+
+	envJWTSecret = "JWT_SECRET"
 )
 
-func newFromEnv() *configuration {
+// newFromEnv создает конфигурацию и загружает все переменные окружения сразу
+func newFromEnv() (*configuration, error) {
 	c := &configuration{}
 
-	return c
+	// Инициализируем PostgreSQL конфигурацию
+	pc := &postgresConfiguration{}
+
+	var err error
+	pc.user, err = getStringFromEnv(envPostgresUser)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres user: %w", err)
+	}
+
+	pc.host, err = getStringFromEnv(envPostgresHost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres host: %w", err)
+	}
+
+	pc.port, err = getIntValueFromEnv(envPosrgresPort, 5432)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres port: %w", err)
+	}
+
+	pc.password, err = getStringFromEnv(envPostgresPassword)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres password: %w", err)
+	}
+
+	pc.db, err = getStringFromEnv(envPostgresDB)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres db: %w", err)
+	}
+
+	pc.sslmode = getStringFromEnvOrDefault(envPostgresSslMode, "disable")
+
+	pc.maxIdleConnections, err = getIntValueFromEnv(envPostgresMaxIdleConnections, 10)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres max idle connections: %w", err)
+	}
+
+	pc.maxOpenConnections, err = getIntValueFromEnv(envPostgresMaxOpenConnections, 10)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get postgres max open connections: %w", err)
+	}
+
+	c.postgresConfiguration = pc
+
+	// Инициализируем Server конфигурацию
+	sc := &serverConfiguration{}
+
+	sc.host = getStringFromEnvOrDefault(envServerHost, "localhost")
+
+	sc.port, err = getIntValueFromEnv(envServerPort, 8080)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get server port: %w", err)
+	}
+
+	c.serverConfiguration = sc
+
+	// Загружаем JWT секрет
+	jwtSecret := getStringFromEnvOrDefault(envJWTSecret, "default-secret-key-change-me")
+	c.jwtSecret = jwtSecret
+
+	return c, nil
 }
 
 // структура для хранения конфигураций, под каждую новую зависимость переменные окружения парсятся тут
 type configuration struct {
 	postgresConfiguration *postgresConfiguration
 	serverConfiguration   *serverConfiguration
+	jwtSecret             string
 }
 
 type postgresConfiguration struct {
@@ -52,49 +113,6 @@ type serverConfiguration struct {
 }
 
 func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
-	if c.postgresConfiguration == nil {
-		var err error
-		pc := &postgresConfiguration{}
-		c.postgresConfiguration = pc
-
-		pc.user, err = getStringFromEnv(envPostgresUser)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.host, err = getStringFromEnv(envPostgresHost)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.port, err = getIntValueFromEnv(envPosrgresPort, 5432)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.password, err = getStringFromEnv(envPostgresPassword)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.sslmode = getStringFromEnvOrDefault(envPostgresSslMode, "disable")
-
-		pc.db, err = getStringFromEnv(envPostgresDB)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.maxIdleConnections, err = getIntValueFromEnv(envPostgresMaxIdleConnections, 10)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pc.maxOpenConnections, err = getIntValueFromEnv(envPostgresMaxOpenConnections, 10)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	return c.postgresConfiguration
 }
 
@@ -106,7 +124,6 @@ func (pc *postgresConfiguration) GetEmbeddedPostgresConfig() embPg.Config {
 		Port(uint32(pc.port)).
 		Version(embPg.V16).
 		StartTimeout(time.Second * 15).
-		Logger(os.Stdout).
 		BinaryRepositoryURL("https://repo1.maven.org/maven2")
 }
 
@@ -133,22 +150,13 @@ func (pc *postgresConfiguration) GetMaxOpenConns() int {
 }
 
 func (c *configuration) GetServerConfiguration() *serverConfiguration {
-	if c.serverConfiguration == nil {
-		var err error
-		sc := &serverConfiguration{}
-		c.serverConfiguration = sc
-
-		sc.host = getStringFromEnvOrDefault(envServerHost, "localhost")
-
-		sc.port, err = getIntValueFromEnv(envServerPort, 8080)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	return c.serverConfiguration
 }
 
 func (sc *serverConfiguration) GetAddress() string {
 	return fmt.Sprintf("%s:%d", sc.host, sc.port)
+}
+
+func (c *configuration) GetJWTSecret() string {
+	return c.jwtSecret
 }

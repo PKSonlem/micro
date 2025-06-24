@@ -1,0 +1,54 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - revive
+  
+  settings:
+    revive:
+      rules:
+        # Отключаем правило требующее комментарии для всех экспортируемых сущностей
+        - name: exported
+          disabled: true
+        # Отключаем требование комментариев к пакетам
+        - name: package-comments
+          disabled: true
+        # Включаем полезные правила
+        - name: blank-imports
+        - name: context-as-argument
+        - name: dot-imports
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: if-return
+        - name: increment-decrement
+        - name: var-naming
+        - name: var-declaration
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+  
+  exclusions:
+    rules:
+      # Исключаем проверки для сгенерированного кода
+      - path: "internal/generated"
+        linters:
+          - revive
+      # Исключаем var-naming для файлов с generated структурами
+      - path: "(handler|server)\\.go"
+        linters:
+          - revive
+        text: "var-naming"
+      # Исключаем var-naming для RequestId в JSON структурах (соответствует OpenAPI схеме)
+      - path: "internal/handler"
+        linters:
+          - revive
+        text: "RequestId" 

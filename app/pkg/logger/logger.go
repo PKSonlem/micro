@@ -42,8 +42,8 @@ type Logger struct {
 
 func New() *Logger {
 	jsonHandler := slog.NewJSONHandler(os.Stdout, nil)
-	contextHandler := newContextHandler(jsonHandler)
-	return &Logger{slog.New(&contextHandler)}
+	ctxHandler := newContextHandler(jsonHandler)
+	return &Logger{slog.New(&ctxHandler)}
 }
 
 func buildFields() fields {

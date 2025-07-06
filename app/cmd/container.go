@@ -75,7 +75,7 @@ func Init() (*Container, func(), error) {
 	}
 
 	closer := func() {
-		if err := c.db.Close(); err != nil {
+		if err = c.db.Close(); err != nil {
 			c.logger.Error(c.ctx, fmt.Errorf("failed to close database: %w", err))
 		}
 	}

@@ -1,8 +1,9 @@
 version: "2"
 
 run:
-  timeout: 5m
-
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+  allow-serial-runners: true
 linters:
   enable:
     - errcheck
@@ -10,45 +11,49 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    - revive
-  
   settings:
+    depguard:
+      rules:
+        log:
+          files:
+            - $all
+          deny:
+            - pkg: log
+            - pkg: log/slog
+    errcheck:
+      check-type-assertions: true
+      check-blank: false
+    govet:
+      disable:
+        - fieldalignment
+      enable-all: true
+      settings:
+        shadow:
+          strict: true
     revive:
       rules:
-        # Отключаем правило требующее комментарии для всех экспортируемых сущностей
-        - name: exported
-          disabled: true
-        # Отключаем требование комментариев к пакетам
-        - name: package-comments
-          disabled: true
-        # Включаем полезные правила
-        - name: blank-imports
-        - name: context-as-argument
-        - name: dot-imports
-        - name: error-return
-        - name: error-strings
-        - name: error-naming
-        - name: if-return
-        - name: increment-decrement
         - name: var-naming
-        - name: var-declaration
-        - name: unexported-return
-        - name: indent-error-flow
-        - name: errorf
-  
+          arguments:
+            - []
+            - []
+            - [[], [], [{skipPackageNameChecks: true}]]
   exclusions:
-    rules:
-      # Исключаем проверки для сгенерированного кода
-      - path: "internal/generated"
-        linters:
-          - revive
-      # Исключаем var-naming для файлов с generated структурами
-      - path: "(handler|server)\\.go"
-        linters:
-          - revive
-        text: "var-naming"
-      # Исключаем var-naming для RequestId в JSON структурах (соответствует OpenAPI схеме)
-      - path: "internal/handler"
-        linters:
-          - revive
-        text: "RequestId" 
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+severity:
+  default: error
+formatters:
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+

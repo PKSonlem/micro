@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
+	"github.com/timurzdev/mentorship-test-task/internal/entity"
 	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
 	"github.com/timurzdev/mentorship-test-task/internal/service/token"
 )
@@ -89,7 +90,8 @@ func (m *Middleware) Apply(next http.Handler) http.Handler {
 
 		// Проверяем, требуется ли роль модератора для этого пути
 		if m.moderatorPaths[r.URL.Path] {
-			role, err := m.rolesProvider.GetRole(r.Context())
+			var role entity.Role
+			role, err = m.rolesProvider.GetRole(r.Context())
 			if err != nil {
 				m.logger.Error(r.Context(), err)
 				http.Error(w, "unauthorized", http.StatusUnauthorized)

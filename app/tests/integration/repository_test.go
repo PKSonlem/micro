@@ -15,6 +15,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
 	"github.com/timurzdev/mentorship-test-task/internal/service/helpers"
+	"github.com/timurzdev/mentorship-test-task/migrations"
 )
 
 const (
@@ -119,27 +120,31 @@ func Test_CreateHouse(t *testing.T) {
 			}
 			defer closer()
 
-			db := container.GetEmbeddedPostgres()
+			// Запускаем PostgreSQL контейнер
+			_, cleanupContainer, err := container.GetPostgresTestContainer()
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer cleanupContainer()
 
-			//такое поведение нужно, если мы хотим на каждый новый тесткейс иметь чистый постгрес,
-			//т.к при вызове db.Stop() мы убиваем процесс постгреса со всеми данными внутри него
-			if err := db.Start(); err != nil {
+			// Получаем строку подключения для миграций
+			migrateConnStr, err := container.GetTestContainerMigrateConnectionString()
+			if err != nil {
 				t.Fatal(err)
 			}
 
-			defer func() {
-				if err := db.Stop(); err != nil {
-					t.Fatal(err)
-				}
-			}()
-
-			// накатываем наши миграции
-			if err := container.GetMigrator().MigrateUp(); err != nil {
+			// Создаем мигратор с строкой подключения к testcontainer
+			migrator := migrations.NewMigrator(migrateConnStr)
+			if err := migrator.MigrateUp(); err != nil {
 				t.Fatal(err)
 			}
 
-			// Создаем подключение к embedded postgres
-			conn, err := sqlx.Connect("postgres", container.GetPostgresConnectionString())
+			// Создаем подключение к testcontainer postgres
+			connStr, err := container.GetTestContainerConnectionString()
+			if err != nil {
+				t.Fatal(err)
+			}
+			conn, err := sqlx.Connect("postgres", connStr)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -170,25 +175,31 @@ func Test_CreateHouse_DuplicateAddress(t *testing.T) {
 	}
 	defer closer()
 
-	db := container.GetEmbeddedPostgres()
+	// Запускаем PostgreSQL контейнер
+	_, cleanupContainer, err := container.GetPostgresTestContainer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanupContainer()
 
-	if err := db.Start(); err != nil {
+	// Получаем строку подключения для миграций
+	migrateConnStr, err := container.GetTestContainerMigrateConnectionString()
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer func() {
-		if err := db.Stop(); err != nil {
-			t.Fatal(err)
-		}
-	}()
-
-	// накатываем наши миграции
-	if err := container.GetMigrator().MigrateUp(); err != nil {
+	// Создаем мигратор с строкой подключения к testcontainer
+	migrator := migrations.NewMigrator(migrateConnStr)
+	if err := migrator.MigrateUp(); err != nil {
 		t.Fatal(err)
 	}
 
-	// Создаем подключение к embedded postgres
-	conn, err := sqlx.Connect("postgres", container.GetPostgresConnectionString())
+	// Создаем подключение к testcontainer postgres
+	connStr, err := container.GetTestContainerConnectionString()
+	if err != nil {
+		t.Fatal(err)
+	}
+	conn, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		t.Fatal(err)
 	}

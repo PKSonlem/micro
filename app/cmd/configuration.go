@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"time"
-
-	embPg "github.com/fergusstrange/embedded-postgres"
 )
 
 const (
@@ -114,17 +111,6 @@ type serverConfiguration struct {
 
 func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
 	return c.postgresConfiguration
-}
-
-func (pc *postgresConfiguration) GetEmbeddedPostgresConfig() embPg.Config {
-	return embPg.Config{}.
-		Database(pc.db).
-		Username(pc.user).
-		Password(pc.password).
-		Port(uint32(pc.port)).
-		Version(embPg.V16).
-		StartTimeout(time.Second * 15).
-		BinaryRepositoryURL("https://repo1.maven.org/maven2")
 }
 
 func (pc *postgresConfiguration) GetConnectionString() string {

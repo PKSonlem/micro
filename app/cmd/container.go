@@ -3,9 +3,12 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"time"
 
-	embPg "github.com/fergusstrange/embedded-postgres"
 	"github.com/jmoiron/sqlx"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	"github.com/testcontainers/testcontainers-go/wait"
 	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
@@ -26,12 +29,13 @@ type Container struct {
 	configuration *configuration
 
 	// Infrastructure
-	ctx              context.Context
-	db               *sqlx.DB
-	embeddedPostgres *embPg.EmbeddedPostgres
-	migrator         *migrations.Migrator
-	logger           *logger.Logger
-	metrics          *metrics.PrometheusMetrics
+	ctx                context.Context
+	db                 *sqlx.DB
+	postgresContainer  *postgres.PostgresContainer
+	testContainerClean func()
+	migrator           *migrations.Migrator
+	logger             *logger.Logger
+	metrics            *metrics.PrometheusMetrics
 
 	// Services
 	tokenService  *token.TokenService
@@ -111,13 +115,40 @@ func (c *Container) GetDB() *sqlx.DB {
 	return c.db
 }
 
-func (c *Container) GetEmbeddedPostgres() *embPg.EmbeddedPostgres {
-	if c.embeddedPostgres == nil {
-		c.embeddedPostgres = embPg.NewDatabase(
-			c.configuration.GetPostgresConfiguration().GetEmbeddedPostgresConfig(),
+func (c *Container) GetPostgresTestContainer() (*postgres.PostgresContainer, func(), error) {
+	if c.postgresContainer == nil {
+		ctx := context.Background()
+		pgConfig := c.configuration.GetPostgresConfiguration()
+
+		container, err := postgres.Run(ctx, "postgres:16-alpine",
+			postgres.WithDatabase(pgConfig.db),
+			postgres.WithUsername(pgConfig.user),
+			postgres.WithPassword(pgConfig.password),
+			testcontainers.WithWaitStrategy(
+				// Ждем сообщение о готовности базы данных (появляется дважды)
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2).
+					WithStartupTimeout(30*time.Second),
+			),
+			testcontainers.WithWaitStrategy(
+				// Ждем, когда порт станет доступен (важно для Mac/Windows)
+				wait.ForListeningPort("5432/tcp").
+					WithStartupTimeout(30*time.Second),
+			),
 		)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to start postgres container: %w", err)
+		}
+
+		c.postgresContainer = container
+		c.testContainerClean = func() {
+			if tErr := container.Terminate(ctx); tErr != nil {
+				c.logger.Error(ctx, fmt.Errorf("failed to terminate postgres container: %w", tErr))
+			}
+		}
 	}
-	return c.embeddedPostgres
+
+	return c.postgresContainer, c.testContainerClean, nil
 }
 
 func (c *Container) GetMigrator() *migrations.Migrator {
@@ -219,7 +250,7 @@ func (c *Container) GetServer() *server.Server {
 	return c.server
 }
 
-// InitForTesting создает контейнер для тестирования с embedded postgres
+// InitForTesting создает контейнер для тестирования с testcontainers
 func InitForTesting() (*Container, func(), error) {
 	c := &Container{}
 
@@ -234,12 +265,37 @@ func InitForTesting() (*Container, func(), error) {
 	c.metrics = metrics.Init()
 
 	// Для тестов не подключаемся к реальной БД
-	// Вместо этого используем embedded postgres через геттер
-	// Тесты сами управляют жизненным циклом embedded postgres (Start/Stop)
+	// Вместо этого используем testcontainers через геттер
+	// Тесты сами управляют жизненным циклом контейнера
 
 	closer := func() {
 		// В тестах ничего не закрываем, так как тесты сами управляют ресурсами
 	}
 
 	return c, closer, nil
+}
+
+// GetTestContainerConnectionString возвращает строку подключения к тестовому PostgreSQL контейнеру
+func (c *Container) GetTestContainerConnectionString() (string, error) {
+	if c.postgresContainer == nil {
+		return "", fmt.Errorf("postgres test container is not initialized")
+	}
+	return c.postgresContainer.ConnectionString(c.ctx, "sslmode=disable")
+}
+
+// GetTestContainerMigrateConnectionString возвращает строку подключения для миграций к тестовому контейнеру
+func (c *Container) GetTestContainerMigrateConnectionString() (string, error) {
+	if c.postgresContainer == nil {
+		return "", fmt.Errorf("postgres test container is not initialized")
+	}
+
+	// Получаем обычную строку подключения
+	connStr, err := c.postgresContainer.ConnectionString(c.ctx, "sslmode=disable")
+	if err != nil {
+		return "", err
+	}
+
+	// Преобразуем её для использования с migrate (требуется URL формат)
+	// ConnectionString возвращает формат: postgres://user:password@host:port/database?sslmode=disable
+	return connStr, nil
 }

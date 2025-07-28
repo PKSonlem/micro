@@ -1,33 +1,42 @@
 stages:
-  - common
+  - test
 
 variables:
-  GO_VERSION: "1.23.2"
+  GO_VERSION: "1.23"
+  # Testcontainers configuration for GitLab CI with Docker socket
+  DOCKER_HOST: "unix:///var/run/docker.sock"
+  TESTCONTAINERS_RYUK_DISABLED: "true"
+  # Remove any TLS settings to use the socket directly
+  DOCKER_TLS_CERTDIR: ""
+  TESTCONTAINERS_HOST_OVERRIDE: "host.docker.internal"
 
-job_common:
-  stage: common
-  image: golang:${GO_VERSION}-alpine
+test:
+  stage: test
+  image: golang:${GO_VERSION}
   before_script:
-    - apk add --no-cache bash curl git shadow
+    - echo "172.17.0.1 host.docker.internal" >> /etc/hosts
+    - apt-get update -qq && apt-get install -y -qq docker.io curl
     - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin
-    - adduser -D -u 1000 appuser
-    - su appuser -c "whoami"
+    - docker version
   script:
-    - su appuser -c '
-        cd ./app &&
-        export GOFLAGS="-buildvcs=false" &&
-        if [ -n "$(gofmt -l .)" ]; then
-          echo "Go code is not formatted. Please run go fmt ./...";
-          gofmt -d .;
-          exit 1;
-        fi &&
-        echo "Start linter" &&
-        golangci-lint run &&
-        echo "Start build" &&
-        go build -v ./... &&
-        echo "Start test" &&
-        go test ./... -v --tags=integration
-      '
+    - cd ./app
+    - export GOFLAGS="-buildvcs=false"
+    # Check formatting
+    - |
+      if [ -n "$(gofmt -l .)" ]; then
+        echo "Go code is not formatted. Please run go fmt ./..."
+        gofmt -d .
+        exit 1
+      fi
+    # Run linter
+    - echo "Start linter"
+    - golangci-lint run
+    # Build
+    - echo "Start build"
+    - go build -v ./...
+    # Run tests
+    - echo "Start integration tests"
+    - go test ./... -v --tags=integration
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       when: always

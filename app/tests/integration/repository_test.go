@@ -6,6 +6,8 @@
 package integration
 
 import (
+	"context"
+	"os"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
@@ -22,10 +24,81 @@ const (
 	envFilePath = "../../deploy/local/.test.env"
 )
 
-func Test_CreateHouse(t *testing.T) {
-	//загружаем в окружение переменные из .env файла
+var (
+	// Глобальные переменные для хранения контейнера и соединения
+	testContainer *cmd.Container
+	testDB        *sqlx.DB
+	testRepo      *repository.Repository
+	testCtx       context.Context
+)
+
+// TestMain запускается один раз для всего пакета тестов
+// ВАЖНО: Для запуска интеграционных тестов требуется Docker
+func TestMain(m *testing.M) {
+	// Загружаем переменные окружения
 	godotenv.Load(envFilePath)
 
+	// Создаем контейнер один раз для всех тестов
+	container, closer, err := cmd.InitForTesting()
+	if err != nil {
+		panic(err)
+	}
+	defer closer()
+
+	testContainer = container
+	testCtx = container.GetContext()
+
+	// Запускаем PostgreSQL контейнер один раз
+	_, cleanupContainer, err := container.GetPostgresTestContainer()
+	if err != nil {
+		panic(err)
+	}
+	defer cleanupContainer()
+
+	// Получаем строку подключения для миграций
+	migrateConnStr, err := container.GetTestContainerMigrateConnectionString()
+	if err != nil {
+		panic(err)
+	}
+
+	// Создаем мигратор и применяем миграции один раз
+	migrator := migrations.NewMigrator(migrateConnStr)
+	if err := migrator.MigrateUp(); err != nil {
+		panic(err)
+	}
+
+	// Создаем подключение к testcontainer postgres
+	connStr, err := container.GetTestContainerConnectionString()
+	if err != nil {
+		panic(err)
+	}
+
+	conn, err := sqlx.Connect("postgres", connStr)
+	if err != nil {
+		panic(err)
+	}
+	defer conn.Close()
+
+	testDB = conn
+	testRepo = repository.NewRepository(conn)
+
+	// Запускаем тесты
+	code := m.Run()
+
+	// Завершаем с кодом возврата от тестов
+	os.Exit(code)
+}
+
+// cleanupDatabase очищает таблицы перед каждым тестом
+func cleanupDatabase(t *testing.T) {
+	// Очищаем таблицу house (flats пока не существует в миграциях)
+	_, err := testDB.Exec("TRUNCATE TABLE house RESTART IDENTITY CASCADE")
+	if err != nil {
+		t.Fatalf("failed to cleanup database: %v", err)
+	}
+}
+
+func Test_CreateHouse(t *testing.T) {
 	type testcase struct {
 		name        string
 		house       entity.House
@@ -113,47 +186,11 @@ func Test_CreateHouse(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			// Создаем новый контейнер для каждого теста
-			container, closer, err := cmd.InitForTesting()
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer closer()
+			// Очищаем БД перед каждым тестом
+			cleanupDatabase(t)
 
-			// Запускаем PostgreSQL контейнер
-			_, cleanupContainer, err := container.GetPostgresTestContainer()
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer cleanupContainer()
-
-			// Получаем строку подключения для миграций
-			migrateConnStr, err := container.GetTestContainerMigrateConnectionString()
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			// Создаем мигратор с строкой подключения к testcontainer
-			migrator := migrations.NewMigrator(migrateConnStr)
-			if err := migrator.MigrateUp(); err != nil {
-				t.Fatal(err)
-			}
-
-			// Создаем подключение к testcontainer postgres
-			connStr, err := container.GetTestContainerConnectionString()
-			if err != nil {
-				t.Fatal(err)
-			}
-			conn, err := sqlx.Connect("postgres", connStr)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer conn.Close()
-
-			// Создаем репозиторий с подключением к embedded postgres
-			repo := repository.NewRepository(conn)
-
-			_, err = repo.CreateHouse(container.GetContext(), tc.house)
+			// Используем глобальный репозиторий и контекст
+			_, err := testRepo.CreateHouse(testCtx, tc.house)
 			if tc.wantErr {
 				assert.Error(t, err)
 				assert.ErrorIs(t, err, tc.expectedErr)
@@ -166,47 +203,8 @@ func Test_CreateHouse(t *testing.T) {
 }
 
 func Test_CreateHouse_DuplicateAddress(t *testing.T) {
-	//загружаем в окружение переменные из .env файла
-	godotenv.Load(envFilePath)
-
-	container, closer, err := cmd.InitForTesting()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer closer()
-
-	// Запускаем PostgreSQL контейнер
-	_, cleanupContainer, err := container.GetPostgresTestContainer()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer cleanupContainer()
-
-	// Получаем строку подключения для миграций
-	migrateConnStr, err := container.GetTestContainerMigrateConnectionString()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Создаем мигратор с строкой подключения к testcontainer
-	migrator := migrations.NewMigrator(migrateConnStr)
-	if err := migrator.MigrateUp(); err != nil {
-		t.Fatal(err)
-	}
-
-	// Создаем подключение к testcontainer postgres
-	connStr, err := container.GetTestContainerConnectionString()
-	if err != nil {
-		t.Fatal(err)
-	}
-	conn, err := sqlx.Connect("postgres", connStr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer conn.Close()
-
-	// Создаем репозиторий с подключением к embedded postgres
-	repo := repository.NewRepository(conn)
+	// Очищаем БД перед тестом
+	cleanupDatabase(t)
 
 	// Создаем первый дом
 	firstHouse := entity.House{
@@ -215,7 +213,7 @@ func Test_CreateHouse_DuplicateAddress(t *testing.T) {
 		Developer: helpers.ToPtr("Застройщик"),
 	}
 
-	createdHouse, err := repo.CreateHouse(container.GetContext(), firstHouse)
+	createdHouse, err := testRepo.CreateHouse(testCtx, firstHouse)
 	assert.NoError(t, err)
 	assert.NotNil(t, createdHouse)
 	assert.Greater(t, createdHouse.ID, 0)
@@ -227,7 +225,7 @@ func Test_CreateHouse_DuplicateAddress(t *testing.T) {
 		Developer: helpers.ToPtr("Другой застройщик"),
 	}
 
-	_, err = repo.CreateHouse(container.GetContext(), duplicateHouse)
+	_, err = testRepo.CreateHouse(testCtx, duplicateHouse)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, entity.ErrorCreatingHouse)
 }

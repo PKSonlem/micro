@@ -161,7 +161,7 @@ func (c *Container) GetMigrator() *migrations.Migrator {
 }
 
 func (c *Container) GetRepository() *repository.Repository {
-	if c.repository == nil && c.db != nil {
+	if c.repository == nil {
 		c.repository = repository.NewRepository(c.db)
 	}
 	return c.repository
@@ -169,10 +169,7 @@ func (c *Container) GetRepository() *repository.Repository {
 
 func (c *Container) GetHouseUsecase() *houseusecases.Usecase {
 	if c.houseUsecase == nil {
-		repo := c.GetRepository()
-		if repo != nil {
-			c.houseUsecase = houseusecases.NewUsecase(repo)
-		}
+		c.houseUsecase = houseusecases.NewUsecase(c.GetRepository())
 	}
 	return c.houseUsecase
 }
@@ -193,13 +190,10 @@ func (c *Container) GetRolesProvider() *roles.RolesProvider {
 
 func (c *Container) GetHouseHandler() *househandler.Handler {
 	if c.houseHandler == nil {
-		usecase := c.GetHouseUsecase()
-		if usecase != nil {
-			c.houseHandler = househandler.NewHandler(
-				usecase,
-				c.logger,
-			)
-		}
+		c.houseHandler = househandler.NewHandler(
+			c.GetHouseUsecase(),
+			c.logger,
+		)
 	}
 	return c.houseHandler
 }
@@ -236,16 +230,14 @@ func (c *Container) GetServer() *server.Server {
 	if c.server == nil {
 		houseHandler := c.GetHouseHandler()
 		authHandler := c.GetAuthHandler()
-		if houseHandler != nil && authHandler != nil {
-			c.server = server.NewServer(
-				c.logger,
-				c.configuration.GetServerConfiguration().GetAddress(),
-				houseHandler,
-				authHandler,
-				c.GetPrometheusMiddleware(),
-				c.GetAuthMiddleware(),
-			)
-		}
+		c.server = server.NewServer(
+			c.logger,
+			c.configuration.GetServerConfiguration().GetAddress(),
+			houseHandler,
+			authHandler,
+			c.GetPrometheusMiddleware(),
+			c.GetAuthMiddleware(),
+		)
 	}
 	return c.server
 }

@@ -69,8 +69,10 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// TODO: добавить graceful shutdown для HTTP сервера
-	<-shutdownCtx.Done()
+	// Выполняем graceful shutdown для HTTP сервера
+	if shutdownErr := server.Shutdown(shutdownCtx); shutdownErr != nil {
+		log.Error(ctx, fmt.Errorf("server forced to shutdown: %w", shutdownErr))
+	}
 
 	log.Info(ctx, "server stopped")
 }

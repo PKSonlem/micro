@@ -12,7 +12,7 @@ test-integration:
 install:
 	go install go.uber.org/mock/mockgen@latest
 	# Устанавливаем последнюю версию golangci-lint
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(HOME)/go/bin
 
 .PHONY: generate
 generate:

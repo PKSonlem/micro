@@ -10,14 +10,18 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
+	flathandler "github.com/timurzdev/mentorship-test-task/internal/handler/flat"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
+
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/server"
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
 	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
 	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	flatusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/flat"
 	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
+
 	"github.com/timurzdev/mentorship-test-task/migrations"
 	"github.com/timurzdev/mentorship-test-task/pkg/logger"
 	"github.com/timurzdev/mentorship-test-task/pkg/metrics"
@@ -46,9 +50,11 @@ type Container struct {
 
 	// Use cases
 	houseUsecase *houseusecases.Usecase
+	flatUsecase  *flatusecases.Usecase
 
 	// Handlers
 	houseHandler *househandler.Handler
+	flatHandler  *flathandler.Handler
 	authHandler  *authhandler.Handler
 
 	// Server & Middleware
@@ -174,6 +180,13 @@ func (c *Container) GetHouseUsecase() *houseusecases.Usecase {
 	return c.houseUsecase
 }
 
+func (c *Container) GetFlatUsecase() *flatusecases.Usecase {
+	if c.flatUsecase == nil {
+		c.flatUsecase = flatusecases.NewUsecase(c.GetRepository())
+	}
+	return c.flatUsecase
+}
+
 func (c *Container) GetTokenService() *token.TokenService {
 	if c.tokenService == nil {
 		c.tokenService = token.NewTokenService([]byte(c.configuration.GetJWTSecret()))
@@ -196,6 +209,16 @@ func (c *Container) GetHouseHandler() *househandler.Handler {
 		)
 	}
 	return c.houseHandler
+}
+
+func (c *Container) GetFlatHandler() *flathandler.Handler {
+	if c.flatHandler == nil {
+		c.flatHandler = flathandler.NewHandler(
+			c.GetFlatUsecase(),
+			c.logger,
+		)
+	}
+	return c.flatHandler
 }
 
 func (c *Container) GetAuthHandler() *authhandler.Handler {
@@ -229,11 +252,13 @@ func (c *Container) GetPrometheusMiddleware() *prometheus.Middleware {
 func (c *Container) GetServer() *server.Server {
 	if c.server == nil {
 		houseHandler := c.GetHouseHandler()
+		flatHandler := c.GetFlatHandler()
 		authHandler := c.GetAuthHandler()
 		c.server = server.NewServer(
 			c.logger,
 			c.configuration.GetServerConfiguration().GetAddress(),
 			houseHandler,
+			flatHandler,
 			authHandler,
 			c.GetPrometheusMiddleware(),
 			c.GetAuthMiddleware(),

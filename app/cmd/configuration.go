@@ -7,7 +7,7 @@ import (
 const (
 	envPostgresDB                 = "POSTGRES_DB"
 	envPostgresHost               = "POSTGRES_HOST"
-	envPosrgresPort               = "POSTGRES_PORT"
+	envPostgresPort               = "POSTGRES_PORT"
 	envPostgresUser               = "POSTGRES_USER"
 	envPostgresPassword           = "POSTGRES_PASSWORD"
 	envPostgresSslMode            = "POSTGRES_SSL_MODE"
@@ -38,7 +38,7 @@ func newFromEnv() (*configuration, error) {
 		return nil, fmt.Errorf("failed to get postgres host: %w", err)
 	}
 
-	pc.port, err = getIntValueFromEnv(envPosrgresPort, 5432)
+	pc.port, err = getIntValueFromEnv(envPostgresPort, 5432)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get postgres port: %w", err)
 	}

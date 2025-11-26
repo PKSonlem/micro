@@ -1,0 +1,1 @@
+ALTER TABLE flat ADD COLUMN status text NOT NULL DEFAULT 'created';

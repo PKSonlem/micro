@@ -10,4 +10,5 @@ type House struct {
 	Developer *string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	AddFlat   *time.Time
 }

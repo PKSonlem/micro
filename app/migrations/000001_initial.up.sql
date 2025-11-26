@@ -8,3 +8,4 @@ create table if not exists house (
 
 	unique (address)
 );
+

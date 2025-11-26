@@ -41,17 +41,17 @@ func (m *Mockrepository) EXPECT() *MockrepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreateHouse mocks base method.
-func (m *Mockrepository) CreateHouse(ctx context.Context, house entity.House) (*entity.House, error) {
+// CreateFlat mocks base method.
+func (m *Mockrepository) CreateFlat(ctx context.Context, flat entity.Flat) (*entity.Flat, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateHouse", ctx, house)
-	ret0, _ := ret[0].(*entity.House)
+	ret := m.ctrl.Call(m, "CreateFlat", ctx, flat)
+	ret0, _ := ret[0].(*entity.Flat)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateHouse indicates an expected call of CreateHouse.
-func (mr *MockrepositoryMockRecorder) CreateHouse(ctx, house any) *gomock.Call {
+// CreateFlat indicates an expected call of CreateFlat.
+func (mr *MockrepositoryMockRecorder) CreateFlat(ctx, flat any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHouse", reflect.TypeOf((*Mockrepository)(nil).CreateHouse), ctx, house)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFlat", reflect.TypeOf((*Mockrepository)(nil).CreateFlat), ctx, flat)
 }

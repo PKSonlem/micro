@@ -8,6 +8,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
 	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
+	flathandler "github.com/timurzdev/mentorship-test-task/internal/handler/flat"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
@@ -19,6 +20,7 @@ type Server struct {
 	addr           string
 	server         *http.Server
 	houseHandler   *househandler.Handler
+	flatHandler    *flathandler.Handler
 	authHandler    *authhandler.Handler
 	promMiddleware *prometheus.Middleware
 	authMiddleware *auth.Middleware
@@ -28,6 +30,7 @@ func NewServer(
 	logger deps.Logger,
 	addr string,
 	houseHandler *househandler.Handler,
+	flatHandler *flathandler.Handler,
 	authHandler *authhandler.Handler,
 	promMiddleware *prometheus.Middleware,
 	authMiddleware *auth.Middleware,
@@ -36,6 +39,7 @@ func NewServer(
 		logger:         logger,
 		addr:           addr,
 		houseHandler:   houseHandler,
+		flatHandler:    flatHandler,
 		authHandler:    authHandler,
 		promMiddleware: promMiddleware,
 		authMiddleware: authMiddleware,
@@ -99,17 +103,7 @@ func (s *Server) GetDummyLogin(ctx context.Context, request generated.GetDummyLo
 
 // PostFlatCreate - заглушка
 func (s *Server) PostFlatCreate(ctx context.Context, request generated.PostFlatCreateRequestObject) (generated.PostFlatCreateResponseObject, error) {
-	return generated.PostFlatCreate500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.flatHandler.CreateFlat(ctx, request)
 }
 
 // PostFlatUpdate - заглушка

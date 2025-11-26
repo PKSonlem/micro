@@ -16,12 +16,13 @@ const (
 )
 
 type houseRow struct {
-	ID        int       `db:"id"`
-	Address   string    `db:"address"`
-	Year      int       `db:"year"`
-	Developer *string   `db:"developer"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID        int        `db:"id"`
+	Address   string     `db:"address"`
+	Year      int        `db:"year"`
+	Developer *string    `db:"developer"`
+	CreatedAt time.Time  `db:"created_at"`
+	UpdatedAt time.Time  `db:"updated_at"`
+	AddFlat   *time.Time `db:"add_flat"`
 }
 
 // действуем по простому правилу - экспортируемый метод - транзакция
@@ -54,6 +55,10 @@ func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *
 		insertMap["developer"] = *house.Developer
 	}
 
+	if house.AddFlat != nil {
+		insertMap["add_flat"] = *house.AddFlat
+	}
+
 	sql, args, err := r.qb.
 		Insert(houseTable).
 		SetMap(insertMap).
@@ -77,6 +82,7 @@ func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *
 		Developer: row.Developer,
 		CreatedAt: row.CreatedAt,
 		UpdatedAt: row.UpdatedAt,
+		AddFlat:   row.AddFlat,
 	}
 
 	return result, nil

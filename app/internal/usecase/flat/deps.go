@@ -1,4 +1,4 @@
-package house
+package flat
 
 import (
 	"context"
@@ -8,5 +8,5 @@ import (
 
 //go:generate mockgen -source=deps.go -destination=mock/deps.go -package=mock
 type repository interface {
-	CreateHouse(ctx context.Context, house entity.House) (*entity.House, error)
+	CreateFlat(ctx context.Context, flat entity.Flat) (*entity.Flat, error)
 }

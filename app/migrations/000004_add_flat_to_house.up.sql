@@ -1,0 +1,1 @@
+ALTER TABLE house ADD COLUMN add_flat timestamp with time zone;

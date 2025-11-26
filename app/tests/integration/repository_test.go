@@ -91,10 +91,14 @@ func TestMain(m *testing.M) {
 
 // cleanupDatabase очищает таблицы перед каждым тестом
 func cleanupDatabase(t *testing.T) {
-	// Очищаем таблицу house (flats пока не существует в миграциях)
 	_, err := testDB.Exec("TRUNCATE TABLE house RESTART IDENTITY CASCADE")
 	if err != nil {
-		t.Fatalf("failed to cleanup database: %v", err)
+		t.Fatalf("failed to cleanup house table: %v", err)
+	}
+
+	_, err = testDB.Exec("TRUNCATE TABLE flat RESTART IDENTITY CASCADE")
+	if err != nil {
+		t.Fatalf("failed to cleanup flat table: %v", err)
 	}
 }
 

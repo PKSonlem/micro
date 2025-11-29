@@ -33,14 +33,14 @@ func (h *Handler) CreateFlat(ctx context.Context, request generated.PostFlatCrea
 		return generated.PostFlatCreate400Response{}, nil
 	}
 
-	flat := converters.FlatFromGen(generated.PostFlatCreateJSONBody(*request.Body))
+	flat := converters.FlatFromGenCreate(generated.PostFlatCreateJSONBody(*request.Body))
 
 	if err := validator.New().Struct(flat); err != nil {
 		h.logger.Error(ctx, err)
 		return generated.PostFlatCreate400Response{}, nil
 	}
 
-	res, err := h.usecase.Handle(ctx, flat)
+	res, err := h.usecase.HandleCreateFlat(ctx, flat)
 	if err != nil {
 		h.logger.Error(ctx, err)
 		if errors.Is(err, entity.ErrorCreatingFlat) {

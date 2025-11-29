@@ -24,7 +24,7 @@ type flatRow struct {
 	Rooms      int       `db:"rooms"`
 	Status     string    `db:"status"`
 	CreatedAt  time.Time `db:"created_at"`
-	UpdateAt   time.Time `db:"update_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
 }
 
 // Транзакция
@@ -36,7 +36,7 @@ func (r *Repository) CreateFlat(ctx context.Context, flat entity.Flat) (*entity.
 		res, err = r.createFlatTx(ctx, flat, tx)
 		return err
 	})
-	if err != nil {
+	if txErr != nil {
 		return nil, txErr
 	}
 
@@ -66,7 +66,7 @@ func (r *Repository) createFlatTx(ctx context.Context, flat entity.Flat, tx *sql
 		"rooms":       flat.Rooms,
 		"status":      "created",
 		"created_at":  time.Now(),
-		"update_at":   time.Now(),
+		"updated_at":  time.Now(),
 	}
 
 	sql, args, err := r.qb.
@@ -108,7 +108,58 @@ func (r *Repository) createFlatTx(ctx context.Context, flat entity.Flat, tx *sql
 		Rooms:      row.Rooms,
 		Status:     row.Status,
 		CreatedAt:  row.CreatedAt,
-		UpdatedAt:  row.UpdateAt,
+		UpdatedAt:  row.UpdatedAt,
+	}
+
+	return result, nil
+}
+
+func (r *Repository) UpdateModeratorFlat(ctx context.Context, flatID int, status string) (*entity.Flat, error) {
+	var res *entity.Flat
+	var err, txErr error
+
+	txErr = sqlxTransaction(ctx, r.conn, func(tx *sqlx.Tx) error {
+		res, err = r.updateModeratorFlat(ctx, flatID, status, tx)
+		return err
+	})
+	if txErr != nil {
+		return nil, txErr
+	}
+
+	return res, nil
+}
+
+func (r *Repository) updateModeratorFlat(ctx context.Context, flatID int, status string, tx *sqlx.Tx) (*entity.Flat, error) {
+	insertMap := map[string]any{
+		"status":     status,
+		"updated_at": time.Now(),
+	}
+
+	sql, args, err := r.qb.
+		Update(flatTable).
+		SetMap(insertMap).
+		Where(sq.Eq{"id": flatID}).
+		Suffix("RETURNING *").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
+	var row flatRow
+	err = tx.GetContext(ctx, &row, sql, args...)
+	if err != nil {
+		return nil, errors.Join(entity.ErrorUpdateModeratorFlat, err)
+	}
+
+	result := &entity.Flat{
+		ID:         row.ID,
+		HouseID:    row.HouseID,
+		FlatNumber: row.FlatNumber,
+		Price:      row.Price,
+		Rooms:      row.Rooms,
+		Status:     row.Status,
+		CreatedAt:  row.CreatedAt,
+		UpdatedAt:  row.UpdatedAt,
 	}
 
 	return result, nil

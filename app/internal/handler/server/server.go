@@ -101,24 +101,14 @@ func (s *Server) GetDummyLogin(ctx context.Context, request generated.GetDummyLo
 	return s.authHandler.GetDummyLogin(ctx, request)
 }
 
-// PostFlatCreate - заглушка
+// PostFlatCreate
 func (s *Server) PostFlatCreate(ctx context.Context, request generated.PostFlatCreateRequestObject) (generated.PostFlatCreateResponseObject, error) {
 	return s.flatHandler.CreateFlat(ctx, request)
 }
 
-// PostFlatUpdate - заглушка
+// PostFlatUpdate
 func (s *Server) PostFlatUpdate(ctx context.Context, request generated.PostFlatUpdateRequestObject) (generated.PostFlatUpdateResponseObject, error) {
-	return generated.PostFlatUpdate500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.flatHandler.UpdateModeratorFlat(ctx, request)
 }
 
 // GetHouseId - заглушка

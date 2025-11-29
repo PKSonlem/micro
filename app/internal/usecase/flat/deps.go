@@ -9,4 +9,5 @@ import (
 //go:generate mockgen -source=deps.go -destination=mock/deps.go -package=mock
 type repository interface {
 	CreateFlat(ctx context.Context, flat entity.Flat) (*entity.Flat, error)
+	UpdateModeratorFlat(ctx context.Context, flatID int, status string) (*entity.Flat, error)
 }

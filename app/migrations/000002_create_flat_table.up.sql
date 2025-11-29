@@ -5,7 +5,7 @@ create table if not exists flat (
     price integer not null,
     rooms integer not null,
     created_at timestamp with time zone not null,
-    update_at timestamp with time zone not null,
+    updated_at timestamp with time zone not null,
 
     unique (house_id, flat_number)
 );

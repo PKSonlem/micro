@@ -55,3 +55,18 @@ func (mr *MockrepositoryMockRecorder) CreateFlat(ctx, flat any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFlat", reflect.TypeOf((*Mockrepository)(nil).CreateFlat), ctx, flat)
 }
+
+// UpdateModeratorFlat mocks base method.
+func (m *Mockrepository) UpdateModeratorFlat(ctx context.Context, flatID int, status string) (*entity.Flat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateModeratorFlat", ctx, flatID, status)
+	ret0, _ := ret[0].(*entity.Flat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateModeratorFlat indicates an expected call of UpdateModeratorFlat.
+func (mr *MockrepositoryMockRecorder) UpdateModeratorFlat(ctx, flatID, status any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateModeratorFlat", reflect.TypeOf((*Mockrepository)(nil).UpdateModeratorFlat), ctx, flatID, status)
+}

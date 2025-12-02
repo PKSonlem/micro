@@ -19,6 +19,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
 	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
 	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	authusecase "github.com/timurzdev/mentorship-test-task/internal/usecase/auth"
 	flatusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/flat"
 	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
 
@@ -49,6 +50,7 @@ type Container struct {
 	repository *repository.Repository
 
 	// Use cases
+	authUsecase  *authusecase.AuthUsecase
 	houseUsecase *houseusecases.Usecase
 	flatUsecase  *flatusecases.Usecase
 
@@ -222,9 +224,21 @@ func (c *Container) GetFlatHandler() *flathandler.Handler {
 	return c.flatHandler
 }
 
+func (c *Container) GetAuthUsecase() *authusecase.AuthUsecase {
+	if c.authUsecase == nil {
+		c.authUsecase = authusecase.NewAuthUsecase(
+			c.GetRepository(),
+			c.GetTokenService(),
+		)
+	}
+
+	return c.authUsecase
+}
+
 func (c *Container) GetAuthHandler() *authhandler.Handler {
 	if c.authHandler == nil {
 		c.authHandler = authhandler.NewHandler(
+			c.GetAuthUsecase(),
 			c.GetTokenService(),
 			c.logger,
 		)

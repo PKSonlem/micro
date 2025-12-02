@@ -2,21 +2,26 @@ package auth
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
+	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
 	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	"github.com/timurzdev/mentorship-test-task/internal/usecase/auth"
 )
 
 type Handler struct {
+	authUsecase  *auth.AuthUsecase
 	tokenService *token.TokenService
 	logger       deps.Logger
 }
 
-func NewHandler(tokenService *token.TokenService, logger deps.Logger) *Handler {
+func NewHandler(authUsecase *auth.AuthUsecase, tokenService *token.TokenService, logger deps.Logger) *Handler {
 	return &Handler{
+		authUsecase:  authUsecase,
 		tokenService: tokenService,
 		logger:       logger,
 	}
@@ -69,5 +74,79 @@ func (h *Handler) GetDummyLogin(ctx context.Context, request generated.GetDummyL
 
 	return generated.GetDummyLogin200JSONResponse{
 		Token: &tokenString,
+	}, nil
+}
+
+func (h *Handler) PostRegister(ctx context.Context, request generated.PostRegisterRequestObject) (generated.PostRegisterResponseObject, error) {
+	if request.Body == nil {
+		return generated.PostRegister400Response{}, nil
+	}
+
+	user := converters.UserFromGenRegister(generated.PostRegisterJSONBody(*request.Body))
+
+	email := user.Email
+	password := user.PasswordHash
+	userType := user.UserType
+
+	userId, err := h.authUsecase.HandleRegister(ctx, email, password, userType)
+	if err != nil {
+		h.logger.Error(ctx, err)
+		if errors.Is(err, entity.ErrorCreatingUser) {
+			return generated.PostRegister400Response{}, nil
+		}
+
+		return generated.PostRegister500JSONResponse{
+			N5xxJSONResponse: generated.N5xxJSONResponse{
+				Body: struct {
+					Code      *int    `json:"code,omitempty"`
+					Message   string  `json:"message"`
+					RequestId *string `json:"request_id,omitempty"`
+				}{
+					Message: "Internal server error",
+				},
+			},
+		}, nil
+	}
+
+	uuidParsed, err := uuid.Parse(userId)
+	if err != nil {
+		return generated.PostRegister400Response{}, nil
+	}
+
+	userIdGenerated := generated.UserId(uuidParsed)
+
+	return generated.PostRegister200JSONResponse{
+		UserId: &userIdGenerated,
+	}, nil
+}
+
+func (h *Handler) PostLogin(ctx context.Context, request generated.PostLoginRequestObject) (generated.PostLoginResponseObject, error) {
+	if request.Body == nil {
+		return generated.PostLogin400Response{}, nil
+	}
+
+	userId, password := converters.UserLoginFromGen(generated.PostLoginJSONBody(*request.Body))
+
+	token, err := h.authUsecase.HandleLogin(ctx, userId, password)
+	if err != nil {
+		h.logger.Error(ctx, err)
+		if errors.Is(err, entity.ErrorLoginUser) {
+			return generated.PostLogin404Response{}, nil
+		}
+		return generated.PostLogin500JSONResponse{
+			N5xxJSONResponse: generated.N5xxJSONResponse{
+				Body: struct {
+					Code      *int    `json:"code,omitempty"`
+					Message   string  `json:"message"`
+					RequestId *string `json:"request_id,omitempty"`
+				}{
+					Message: "Internal server error",
+				},
+			},
+		}, nil
+	}
+
+	return generated.PostLogin200JSONResponse{
+		Token: &token,
 	}, nil
 }

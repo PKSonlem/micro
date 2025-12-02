@@ -10,21 +10,25 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
 	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
+	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
 	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
 )
 
 type Handler struct {
-	usecase *houseusecases.Usecase
-	logger  deps.Logger
+	roleProvider *roles.RolesProvider
+	usecase      *houseusecases.Usecase
+	logger       deps.Logger
 }
 
 func NewHandler(
+	roleProvider *roles.RolesProvider,
 	usecase *houseusecases.Usecase,
 	logger deps.Logger,
 ) *Handler {
 	return &Handler{
-		usecase: usecase,
-		logger:  logger,
+		roleProvider: roleProvider,
+		usecase:      usecase,
+		logger:       logger,
 	}
 }
 

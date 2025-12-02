@@ -18,6 +18,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/internal/repository"
 	"github.com/timurzdev/mentorship-test-task/internal/service/helpers"
 	"github.com/timurzdev/mentorship-test-task/migrations"
+	"github.com/timurzdev/mentorship-test-task/pkg/fixtures"
 )
 
 const (
@@ -232,4 +233,109 @@ func Test_CreateHouse_DuplicateAddress(t *testing.T) {
 	_, err = testRepo.CreateHouse(testCtx, duplicateHouse)
 	assert.Error(t, err)
 	assert.ErrorIs(t, err, entity.ErrorCreatingHouse)
+}
+
+func Test_GetHouseFlats(t *testing.T) {
+	cleanupDatabase(t)
+
+	fm := fixtures.NewFixtureManager(testDB)
+	err := fm.LoadFixtures()
+	assert.NoError(t, err)
+
+	type testcase struct {
+		name        string
+		houseID     int
+		isModerator bool
+		wantErr     bool
+		validate    func(t *testing.T, flats []entity.Flat)
+	}
+
+	testcases := []testcase{
+		{
+			name:        "moderator sees all flats for house 1",
+			houseID:     1,
+			isModerator: true,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 3)
+				statuses := make(map[string]bool)
+				for _, flat := range flats {
+					statuses[flat.Status] = true
+					assert.Equal(t, 1, flat.HouseID)
+				}
+				assert.True(t, statuses["created"])
+				assert.True(t, statuses["approved"])
+				assert.True(t, statuses["on moderation"])
+			},
+		},
+		{
+			name:        "client sees only approved flats for house 1",
+			houseID:     1,
+			isModerator: false,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 1) // только 1 approved
+				assert.Equal(t, "approved", flats[0].Status)
+				assert.Equal(t, 1, flats[0].HouseID)
+				assert.Equal(t, 800, flats[0].Price)
+				assert.Equal(t, 4, flats[0].Rooms)
+			},
+		},
+		{
+			name:        "house without flats returns empty slice",
+			houseID:     2,
+			isModerator: true,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 0) // дом 2 без квартир
+			},
+		},
+		{
+			name:        "moderator sees created flat for house 3",
+			houseID:     3,
+			isModerator: true,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 1)
+				assert.Equal(t, "created", flats[0].Status)
+				assert.Equal(t, 3, flats[0].HouseID)
+				assert.Equal(t, 200, flats[0].Price)
+				assert.Equal(t, 1, flats[0].Rooms)
+			},
+		},
+		{
+			name:        "client sees no flats for house 3 (no approved)",
+			houseID:     3,
+			isModerator: false,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 0) // только created, а client видит только approved
+			},
+		},
+		{
+			name:        "non-existent house returns empty slice",
+			houseID:     999,
+			isModerator: true,
+			wantErr:     false,
+			validate: func(t *testing.T, flats []entity.Flat) {
+				assert.Len(t, flats, 0)
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			flats, err := testRepo.GetHouseFlats(testCtx, tc.houseID, tc.isModerator)
+
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			if tc.validate != nil {
+				tc.validate(t, flats)
+			}
+		})
+	}
 }

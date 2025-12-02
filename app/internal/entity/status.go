@@ -7,7 +7,7 @@ const (
 	OnModerationStatus = "on moderation"
 )
 
-var validStatuses = map[string]bool{
+var validStatus = map[string]bool{
 	CreatedStatus:      true,
 	ApprovedStatus:     true,
 	DeclinedStatus:     true,
@@ -15,5 +15,5 @@ var validStatuses = map[string]bool{
 }
 
 func IsValidStatus(status string) bool {
-	return validStatuses[status]
+	return validStatus[status]
 }

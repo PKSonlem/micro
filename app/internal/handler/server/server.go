@@ -111,19 +111,9 @@ func (s *Server) PostFlatUpdate(ctx context.Context, request generated.PostFlatU
 	return s.flatHandler.UpdateModeratorFlat(ctx, request)
 }
 
-// GetHouseId - заглушка
+// GetHouseId
 func (s *Server) GetHouseId(ctx context.Context, request generated.GetHouseIdRequestObject) (generated.GetHouseIdResponseObject, error) {
-	return generated.GetHouseId500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.houseHandler.GetHouseFlats(ctx, request)
 }
 
 // PostHouseIdSubscribe - заглушка
@@ -141,32 +131,12 @@ func (s *Server) PostHouseIdSubscribe(ctx context.Context, request generated.Pos
 	}, nil
 }
 
-// PostLogin - заглушка
+// PostLogin
 func (s *Server) PostLogin(ctx context.Context, request generated.PostLoginRequestObject) (generated.PostLoginResponseObject, error) {
-	return generated.PostLogin500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.authHandler.PostLogin(ctx, request)
 }
 
-// PostRegister - заглушка
+// PostRegister
 func (s *Server) PostRegister(ctx context.Context, request generated.PostRegisterRequestObject) (generated.PostRegisterResponseObject, error) {
-	return generated.PostRegister500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.authHandler.PostRegister(ctx, request)
 }

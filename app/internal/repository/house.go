@@ -7,12 +7,14 @@ import (
 
 	"errors"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
 )
 
 const (
 	houseTable = "house"
+	flatsTable = "flat"
 )
 
 type houseRow struct {
@@ -83,6 +85,41 @@ func (r *Repository) createHouseTx(ctx context.Context, house entity.House, tx *
 		CreatedAt: row.CreatedAt,
 		UpdatedAt: row.UpdatedAt,
 		AddFlat:   row.AddFlat,
+	}
+
+	return result, nil
+}
+
+func (r *Repository) GetHouseFlats(ctx context.Context, houseID int, isModerator bool) ([]entity.Flat, error) {
+	query := r.qb.Select("*").From(flatTable).Where(sq.Eq{"house_id": houseID})
+
+	if !isModerator {
+		query = query.Where(sq.Eq{"status": "approved"})
+	}
+
+	sql, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error building query: %w", err)
+	}
+
+	var rows []flatRow
+	err = r.conn.SelectContext(ctx, &rows, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("error getting flats: %w", err)
+	}
+
+	result := make([]entity.Flat, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, entity.Flat{
+			ID:         row.ID,
+			HouseID:    row.HouseID,
+			FlatNumber: row.FlatNumber,
+			Price:      row.Price,
+			Rooms:      row.Rooms,
+			Status:     row.Status,
+			CreatedAt:  row.CreatedAt,
+			UpdatedAt:  row.UpdatedAt,
+		})
 	}
 
 	return result, nil

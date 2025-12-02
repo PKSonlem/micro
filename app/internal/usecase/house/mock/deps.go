@@ -55,3 +55,18 @@ func (mr *MockrepositoryMockRecorder) CreateHouse(ctx, house any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHouse", reflect.TypeOf((*Mockrepository)(nil).CreateHouse), ctx, house)
 }
+
+// GetHouseFlats mocks base method.
+func (m *Mockrepository) GetHouseFlats(ctx context.Context, houseId int, isModerator bool) ([]entity.Flat, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHouseFlats", ctx, houseId, isModerator)
+	ret0, _ := ret[0].([]entity.Flat)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHouseFlats indicates an expected call of GetHouseFlats.
+func (mr *MockrepositoryMockRecorder) GetHouseFlats(ctx, houseId, isModerator any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHouseFlats", reflect.TypeOf((*Mockrepository)(nil).GetHouseFlats), ctx, houseId, isModerator)
+}

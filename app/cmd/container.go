@@ -204,6 +204,7 @@ func (c *Container) GetRolesProvider() *roles.RolesProvider {
 func (c *Container) GetHouseHandler() *househandler.Handler {
 	if c.houseHandler == nil {
 		c.houseHandler = househandler.NewHandler(
+			c.GetRolesProvider(),
 			c.GetHouseUsecase(),
 			c.logger,
 		)

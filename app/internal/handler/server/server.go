@@ -111,19 +111,9 @@ func (s *Server) PostFlatUpdate(ctx context.Context, request generated.PostFlatU
 	return s.flatHandler.UpdateModeratorFlat(ctx, request)
 }
 
-// GetHouseId - заглушка
+// GetHouseId
 func (s *Server) GetHouseId(ctx context.Context, request generated.GetHouseIdRequestObject) (generated.GetHouseIdResponseObject, error) {
-	return generated.GetHouseId500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.houseHandler.GetHouseFlats(ctx, request)
 }
 
 // PostHouseIdSubscribe - заглушка

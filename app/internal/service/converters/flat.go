@@ -6,10 +6,15 @@ import (
 )
 
 func FlatFromGenCreate(reqGen generated.PostFlatCreateJSONBody) entity.Flat {
+	var rooms int
+	if reqGen.Rooms != nil {
+		rooms = *reqGen.Rooms
+	}
+
 	return entity.Flat{
 		HouseID: reqGen.HouseId,
 		Price:   reqGen.Price,
-		Rooms:   *reqGen.Rooms,
+		Rooms:   rooms,
 	}
 }
 

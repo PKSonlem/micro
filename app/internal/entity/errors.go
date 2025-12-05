@@ -8,4 +8,6 @@ var (
 	ErrorUpdateModeratorFlat = errors.New("error update flat")
 	ErrorCreatingUser        = errors.New("error creating user")
 	ErrorLoginUser           = errors.New("error login user")
+	ErrorCreateSubs          = errors.New("error creating subscription")
+	ErrorHouseNotFound       = errors.New("house not found")
 )

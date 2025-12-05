@@ -18,6 +18,9 @@ const (
 	envServerPort = "SERVER_PORT"
 
 	envJWTSecret = "JWT_SECRET"
+
+	envOutboxWorkerInterval = "OUTBOX_WORKER_INTERVAL"
+	envOutboxWorkerLimit    = "OUTBOX_WORKER_LIMIT"
 )
 
 // newFromEnv создает конфигурацию и загружает все переменные окружения сразу
@@ -83,6 +86,20 @@ func newFromEnv() (*configuration, error) {
 	jwtSecret := getStringFromEnvOrDefault(envJWTSecret, "default-secret-key-change-me")
 	c.jwtSecret = jwtSecret
 
+	wc := &workerConfiguration{}
+
+	wc.interval, err = getIntValueFromEnv(envOutboxWorkerInterval, 10)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get outbox worker poll interval: %w", err)
+	}
+
+	wc.limit, err = getIntValueFromEnv(envOutboxWorkerLimit, 100)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get outbox worker batch size: %w", err)
+	}
+
+	c.workerConfiguration = wc
+
 	return c, nil
 }
 
@@ -90,6 +107,7 @@ func newFromEnv() (*configuration, error) {
 type configuration struct {
 	postgresConfiguration *postgresConfiguration
 	serverConfiguration   *serverConfiguration
+	workerConfiguration   *workerConfiguration
 	jwtSecret             string
 }
 
@@ -107,6 +125,11 @@ type postgresConfiguration struct {
 type serverConfiguration struct {
 	host string
 	port int64
+}
+
+type workerConfiguration struct {
+	interval int64
+	limit    int64
 }
 
 func (c *configuration) GetPostgresConfiguration() *postgresConfiguration {
@@ -145,4 +168,16 @@ func (sc *serverConfiguration) GetAddress() string {
 
 func (c *configuration) GetJWTSecret() string {
 	return c.jwtSecret
+}
+
+func (c *configuration) GetWorkerConfiguration() *workerConfiguration {
+	return c.workerConfiguration
+}
+
+func (w *workerConfiguration) GetInterval() int64 {
+	return w.interval
+}
+
+func (w *workerConfiguration) GetLimit() int {
+	return int(w.limit)
 }

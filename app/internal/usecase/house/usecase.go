@@ -23,3 +23,7 @@ func (u *Usecase) Handle(ctx context.Context, house entity.House) (*entity.House
 func (u *Usecase) HandleGetHouseFlatID(ctx context.Context, houseID int, isModerator bool) ([]entity.Flat, error) {
 	return u.repo.GetHouseFlats(ctx, houseID, isModerator)
 }
+
+func (u *Usecase) Subscribe(ctx context.Context, houseID int, email string) error {
+	return u.repo.CreateSubscription(ctx, houseID, email)
+}

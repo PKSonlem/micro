@@ -58,6 +58,9 @@ func main() {
 		server.Run(ctx)
 	}()
 
+	worker := container.GetOutboxWorker()
+	go worker.Start(ctx)
+
 	// Настраиваем graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

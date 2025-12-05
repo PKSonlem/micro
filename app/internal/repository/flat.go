@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	flatTable = "flat"
+	flatTable   = "flat"
+	subsTable   = "subscription"
+	outboxTable = "outbox"
 )
 
 type flatRow struct {
@@ -79,11 +81,11 @@ func (r *Repository) createFlatTx(ctx context.Context, flat entity.Flat, tx *sql
 		return nil, fmt.Errorf("error building query: %w", err)
 	}
 
-	updateSQL, updateArgs, err := r.qb. // добавляем время создания квартиры в струкуре дом
-						Update(houseTable).
-						Set("add_flat", time.Now()).
-						Where(sq.Eq{"id": flat.HouseID}). // sq функция для создания учловия равенства в SQl-запросах (WHERE id = <значение flat.HouseID>)
-						ToSql()
+	updateSQL, updateArgs, err := r.qb.
+		Update(houseTable).
+		Set("add_flat", time.Now()).
+		Where(sq.Eq{"id": flat.HouseID}).
+		ToSql()
 
 	if err != nil {
 		return nil, fmt.Errorf("error build update query: %w", err)
@@ -142,13 +144,57 @@ func (r *Repository) updateModeratorFlat(ctx context.Context, flatID int, status
 		Suffix("RETURNING *").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("error building query: %w", err)
+		return nil, fmt.Errorf("error building query to flat: %w", err)
 	}
 
 	var row flatRow
 	err = tx.GetContext(ctx, &row, sql, args...)
 	if err != nil {
 		return nil, errors.Join(entity.ErrorUpdateModeratorFlat, err)
+	}
+
+	sqlSelectSubs, argsSelectSubs, err := r.qb.Select("email").From(subsTable).Where(sq.Eq{"house_id": row.HouseID}).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("error building query to subs: %w", err)
+	}
+
+	subsRow, err := tx.QueryContext(ctx, sqlSelectSubs, argsSelectSubs...)
+	if err != nil {
+		return nil, errors.Join(entity.ErrorCreateSubs, err)
+	}
+
+	var emails []string
+	for subsRow.Next() {
+		var email string
+		if err = subsRow.Scan(&email); err != nil {
+			return nil, err
+		}
+
+		emails = append(emails, email)
+	}
+
+	for _, email := range emails {
+		outboxMap := map[string]any{
+			"event_type": "approved",
+			"flat_id":    row.ID,
+			"house_id":   row.HouseID,
+			"email":      email,
+			"status":     "pending",
+			"created_at": time.Now(),
+			"message":    fmt.Sprintf("Flat approved in house %d: Flat #%d, %d rooms, price %d", row.HouseID, row.FlatNumber, row.Rooms, row.Price),
+		}
+
+		var outboxSQL string
+		var outboxArgs []interface{}
+		outboxSQL, outboxArgs, err = r.qb.Insert(outboxTable).SetMap(outboxMap).ToSql()
+		if err != nil {
+			return nil, fmt.Errorf("error build query to outbox: %w", err)
+		}
+
+		_, err = tx.ExecContext(ctx, outboxSQL, outboxArgs...)
+		if err != nil {
+			return nil, fmt.Errorf("error inserting outbox event: %w", err)
+		}
 	}
 
 	result := &entity.Flat{

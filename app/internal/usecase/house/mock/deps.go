@@ -56,6 +56,20 @@ func (mr *MockrepositoryMockRecorder) CreateHouse(ctx, house any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateHouse", reflect.TypeOf((*Mockrepository)(nil).CreateHouse), ctx, house)
 }
 
+// CreateSubscription mocks base method.
+func (m *Mockrepository) CreateSubscription(ctx context.Context, houseID int, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateSubscription", ctx, houseID, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateSubscription indicates an expected call of CreateSubscription.
+func (mr *MockrepositoryMockRecorder) CreateSubscription(ctx, houseID, email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateSubscription", reflect.TypeOf((*Mockrepository)(nil).CreateSubscription), ctx, houseID, email)
+}
+
 // GetHouseFlats mocks base method.
 func (m *Mockrepository) GetHouseFlats(ctx context.Context, houseId int, isModerator bool) ([]entity.Flat, error) {
 	m.ctrl.T.Helper()

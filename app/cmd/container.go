@@ -12,6 +12,7 @@ import (
 	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
 	flathandler "github.com/timurzdev/mentorship-test-task/internal/handler/flat"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
+	"github.com/timurzdev/mentorship-test-task/internal/worker"
 
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
 	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
@@ -26,6 +27,7 @@ import (
 	"github.com/timurzdev/mentorship-test-task/migrations"
 	"github.com/timurzdev/mentorship-test-task/pkg/logger"
 	"github.com/timurzdev/mentorship-test-task/pkg/metrics"
+	"github.com/timurzdev/mentorship-test-task/pkg/sender"
 )
 
 // Container - единый контейнер всех зависимостей приложения
@@ -58,6 +60,9 @@ type Container struct {
 	houseHandler *househandler.Handler
 	flatHandler  *flathandler.Handler
 	authHandler  *authhandler.Handler
+
+	// Worker
+	outboxWorker *worker.OutboxWorker
 
 	// Server & Middleware
 	server               *server.Server
@@ -255,6 +260,22 @@ func (c *Container) GetAuthMiddleware() *auth.Middleware {
 		)
 	}
 	return c.authMiddleware
+}
+
+func (c *Container) GetOutboxWorker() *worker.OutboxWorker {
+	if c.outboxWorker == nil {
+		workerConfig := c.configuration.GetWorkerConfiguration()
+		emailSender := sender.New()
+		c.outboxWorker = worker.NewOutboxWorker(
+			c.GetRepository(),
+			emailSender,
+			c.logger,
+			time.Duration(workerConfig.GetInterval())*time.Second,
+			workerConfig.GetLimit(),
+		)
+	}
+
+	return c.outboxWorker
 }
 
 func (c *Container) GetPrometheusMiddleware() *prometheus.Middleware {

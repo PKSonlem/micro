@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/timurzdev/mentorship-test-task/internal/deps"
 	"github.com/timurzdev/mentorship-test-task/internal/generated"
+
 	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
 	flathandler "github.com/timurzdev/mentorship-test-task/internal/handler/flat"
 	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
@@ -91,12 +92,12 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // Реализация StrictServerInterface
 
-// PostHouseCreate делегирует обработку в house handler
+// PostHouseCreate
 func (s *Server) PostHouseCreate(ctx context.Context, request generated.PostHouseCreateRequestObject) (generated.PostHouseCreateResponseObject, error) {
 	return s.houseHandler.CreateHouse(ctx, request)
 }
 
-// GetDummyLogin делегирует обработку в auth handler
+// GetDummyLogin
 func (s *Server) GetDummyLogin(ctx context.Context, request generated.GetDummyLoginRequestObject) (generated.GetDummyLoginResponseObject, error) {
 	return s.authHandler.GetDummyLogin(ctx, request)
 }
@@ -116,19 +117,9 @@ func (s *Server) GetHouseId(ctx context.Context, request generated.GetHouseIdReq
 	return s.houseHandler.GetHouseFlats(ctx, request)
 }
 
-// PostHouseIdSubscribe - заглушка
+// PostHouseIdSubscribe
 func (s *Server) PostHouseIdSubscribe(ctx context.Context, request generated.PostHouseIdSubscribeRequestObject) (generated.PostHouseIdSubscribeResponseObject, error) {
-	return generated.PostHouseIdSubscribe500JSONResponse{
-		N5xxJSONResponse: generated.N5xxJSONResponse{
-			Body: struct {
-				Code      *int    `json:"code,omitempty"`
-				Message   string  `json:"message"`
-				RequestId *string `json:"request_id,omitempty"`
-			}{
-				Message: "Not implemented",
-			},
-		},
-	}, nil
+	return s.houseHandler.Subscribe(ctx, request)
 }
 
 // PostLogin

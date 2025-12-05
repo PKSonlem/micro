@@ -2,10 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
-
-	"errors"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -14,7 +13,6 @@ import (
 
 const (
 	houseTable = "house"
-	flatsTable = "flat"
 )
 
 type houseRow struct {
@@ -123,4 +121,31 @@ func (r *Repository) GetHouseFlats(ctx context.Context, houseID int, isModerator
 	}
 
 	return result, nil
+}
+
+func (r *Repository) CreateSubscription(ctx context.Context, houseID int, email string) error {
+	insertMap := map[string]any{
+		"house_id":   houseID,
+		"email":      email,
+		"created_at": time.Now(),
+	}
+
+	sql, args, err := r.qb.
+		Insert(subsTable).
+		SetMap(insertMap).
+		ToSql()
+
+	if err != nil {
+		return fmt.Errorf("error building query: %w", err)
+	}
+
+	_, err = r.conn.ExecContext(ctx, sql, args...)
+	if err != nil {
+		if errors.Is(err, entity.ErrorHouseNotFound) {
+			return entity.ErrorHouseNotFound
+		}
+		return fmt.Errorf("error creating subscription: %w", err)
+	}
+
+	return nil
 }

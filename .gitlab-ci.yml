@@ -2,7 +2,7 @@ stages:
   - test
 
 variables:
-  GO_VERSION: "1.23"
+  GO_VERSION: "1.25"
   # Testcontainers configuration for GitLab CI with Docker socket
   DOCKER_HOST: "unix:///var/run/docker.sock"
   TESTCONTAINERS_RYUK_DISABLED: "true"

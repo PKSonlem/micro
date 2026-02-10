@@ -10,26 +10,25 @@ import (
 	"github.com/timurzdev/mentorship-test-task/pkg/sender"
 )
 
-// тут кончно жестко помог клауд, но в приниципе писал ручками все
-// так я понимал как логически это написать, но как встроить в проект не понимал
-
 type OutboxWorker struct {
-	repo         *repository.Repository
-	sender       *sender.Sender
-	logger       *logger.Logger
-	interval     time.Duration
-	limit        int
-	stuckTimeout time.Duration
+	repo          *repository.Repository
+	sender        *sender.Sender
+	logger        *logger.Logger
+	analyticsRepo *repository.AnalyticsRepository
+	interval      time.Duration
+	limit         int
+	stuckTimeout  time.Duration
 }
 
-func NewOutboxWorker(repo *repository.Repository, sender *sender.Sender, logger *logger.Logger, interval time.Duration, limit int) *OutboxWorker {
+func NewOutboxWorker(repo *repository.Repository, sender *sender.Sender, logger *logger.Logger, analyticsRepo *repository.AnalyticsRepository, interval time.Duration, limit int) *OutboxWorker {
 	return &OutboxWorker{
-		repo:         repo,
-		sender:       sender,
-		logger:       logger,
-		interval:     interval,
-		limit:        limit,
-		stuckTimeout: 5 * time.Minute,
+		repo:          repo,
+		sender:        sender,
+		logger:        logger,
+		analyticsRepo: analyticsRepo,
+		interval:      interval,
+		limit:         limit,
+		stuckTimeout:  5 * time.Minute,
 	}
 }
 
@@ -114,4 +113,19 @@ func (w *OutboxWorker) processBatch(ctx context.Context) {
 	}
 
 	w.logger.Info(ctx, fmt.Sprintf("Batch processed: %d successful, %d failed", len(successIDs), len(failedIDs)))
+
+	if len(events) > 0 {
+		statuses := make(map[int]string)
+		for _, id := range successIDs {
+			statuses[id] = "sent"
+		}
+		for _, id := range failedIDs {
+			statuses[id] = "failed"
+		}
+
+		err = w.analyticsRepo.InsertOutboxEvents(ctx, events, statuses)
+		if err != nil {
+			w.logger.Error(ctx, fmt.Errorf("failed to insert events to clickhouse: %w", err))
+		}
+	}
 }

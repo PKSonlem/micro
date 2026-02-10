@@ -4,6 +4,9 @@ services:
       context: ../../
       dockerfile: ./deploy/common/Dockerfile
     container_name: app
+    depends_on:
+      - clickhouse
+      - db
     ports:
       - "${SERVER_PORT}:8080"
     env_file:
@@ -11,6 +14,7 @@ services:
     restart: unless-stopped
     networks:
       - general
+
   db:
     image: postgres:16-alpine
     container_name: postgres
@@ -25,6 +29,22 @@ services:
       - path: ./.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - general
+
+  clickhouse: 
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    environment:
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: password
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes: 
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - general
 
@@ -55,6 +75,7 @@ services:
 
 volumes:
   postgres_data:
+  clickhouse_data:
 
 networks:
   general:

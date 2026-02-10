@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 	"github.com/jmoiron/sqlx"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -25,6 +26,7 @@ import (
 	houseusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/house"
 
 	"github.com/timurzdev/mentorship-test-task/migrations"
+	"github.com/timurzdev/mentorship-test-task/pkg/events"
 	"github.com/timurzdev/mentorship-test-task/pkg/logger"
 	"github.com/timurzdev/mentorship-test-task/pkg/metrics"
 	"github.com/timurzdev/mentorship-test-task/pkg/sender"
@@ -43,6 +45,10 @@ type Container struct {
 	migrator           *migrations.Migrator
 	logger             *logger.Logger
 	metrics            *metrics.PrometheusMetrics
+
+	clickhouseConn      driver.Conn
+	analyticsRepository *repository.AnalyticsRepository
+	eventPublisher      *events.Publisher
 
 	// Services
 	tokenService  *token.TokenService
@@ -64,6 +70,8 @@ type Container struct {
 	// Worker
 	outboxWorker *worker.OutboxWorker
 
+	// ClickHouse
+
 	// Server & Middleware
 	server               *server.Server
 	prometheusMiddleware *prometheus.Middleware
@@ -84,6 +92,11 @@ func Init() (*Container, func(), error) {
 
 	c.logger = logger.New()
 
+	c.clickhouseConn, err = NewClickHouseConn(c.configuration.GetClickHouseConfiguration())
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to connect to clickhouse: %w", err)
+	}
+
 	c.metrics = metrics.Init()
 
 	c.db, err = NewSqlxConn(c.configuration.GetPostgresConfiguration())
@@ -94,6 +107,9 @@ func Init() (*Container, func(), error) {
 	closer := func() {
 		if err = c.db.Close(); err != nil {
 			c.logger.Error(c.ctx, fmt.Errorf("failed to close database: %w", err))
+		}
+		if err = c.clickhouseConn.Close(); err != nil {
+			c.logger.Error(c.ctx, fmt.Errorf("failed to close clickhouse: %w", err))
 		}
 	}
 
@@ -182,14 +198,14 @@ func (c *Container) GetRepository() *repository.Repository {
 
 func (c *Container) GetHouseUsecase() *houseusecases.Usecase {
 	if c.houseUsecase == nil {
-		c.houseUsecase = houseusecases.NewUsecase(c.GetRepository())
+		c.houseUsecase = houseusecases.NewUsecase(c.GetRepository(), c.GetEventPublisher())
 	}
 	return c.houseUsecase
 }
 
 func (c *Container) GetFlatUsecase() *flatusecases.Usecase {
 	if c.flatUsecase == nil {
-		c.flatUsecase = flatusecases.NewUsecase(c.GetRepository())
+		c.flatUsecase = flatusecases.NewUsecase(c.GetRepository(), c.GetEventPublisher())
 	}
 	return c.flatUsecase
 }
@@ -234,6 +250,7 @@ func (c *Container) GetAuthUsecase() *authusecase.AuthUsecase {
 		c.authUsecase = authusecase.NewAuthUsecase(
 			c.GetRepository(),
 			c.GetTokenService(),
+			c.GetEventPublisher(),
 		)
 	}
 
@@ -270,6 +287,7 @@ func (c *Container) GetOutboxWorker() *worker.OutboxWorker {
 			c.GetRepository(),
 			emailSender,
 			c.logger,
+			c.GetAnalyticsRepository(),
 			time.Duration(workerConfig.GetInterval())*time.Second,
 			workerConfig.GetLimit(),
 		)
@@ -277,6 +295,8 @@ func (c *Container) GetOutboxWorker() *worker.OutboxWorker {
 
 	return c.outboxWorker
 }
+
+// func (c *Container) GetClickConfiguration() *
 
 func (c *Container) GetPrometheusMiddleware() *prometheus.Middleware {
 	if c.prometheusMiddleware == nil {
@@ -351,4 +371,23 @@ func (c *Container) GetTestContainerMigrateConnectionString() (string, error) {
 	// Преобразуем её для использования с migrate (требуется URL формат)
 	// ConnectionString возвращает формат: postgres://user:password@host:port/database?sslmode=disable
 	return connStr, nil
+}
+
+func (c *Container) GetAnalyticsRepository() *repository.AnalyticsRepository {
+	if c.analyticsRepository == nil {
+		c.analyticsRepository = repository.NewAnalyticsRepository(c.clickhouseConn)
+	}
+	return c.analyticsRepository
+}
+
+func (c *Container) GetEventPublisher() *events.Publisher {
+	if c.eventPublisher == nil {
+		c.eventPublisher = events.NewPublisher(
+			c.GetAnalyticsRepository(),
+			c.GetRolesProvider(),
+			c.logger,
+		)
+	}
+
+	return c.eventPublisher
 }

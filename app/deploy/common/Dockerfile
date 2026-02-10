@@ -1,5 +1,5 @@
 # Стадия 1: Сборка бинарного файла
-FROM golang:1.23 AS builder
+FROM golang:1.25 AS builder
 
 # Устанавливаем рабочую директорию внутри контейнера
 WORKDIR /app

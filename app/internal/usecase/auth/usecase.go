@@ -5,18 +5,21 @@ import (
 	"fmt"
 
 	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/timurzdev/mentorship-test-task/pkg/events"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthUsecase struct {
-	repo         repository
-	tokenService tokenService
+	repo           repository
+	tokenService   tokenService
+	eventPublisher *events.Publisher
 }
 
-func NewAuthUsecase(repository repository, tokenService tokenService) *AuthUsecase {
+func NewAuthUsecase(repository repository, tokenService tokenService, eventPublisher *events.Publisher) *AuthUsecase {
 	return &AuthUsecase{
-		repo:         repository,
-		tokenService: tokenService,
+		repo:           repository,
+		tokenService:   tokenService,
+		eventPublisher: eventPublisher,
 	}
 }
 
@@ -37,6 +40,12 @@ func (a *AuthUsecase) HandleRegister(ctx context.Context, email, password, userT
 		return "", fmt.Errorf("error creared user: %w", err)
 	}
 
+	a.eventPublisher.PublishWithUser(ctx, events.EventUserRegistered, 0, "user", map[string]interface{}{
+		"user_id":   cUser.UserId,
+		"email":     email,
+		"user_type": userType,
+	})
+
 	return cUser.UserId, nil
 }
 
@@ -56,6 +65,10 @@ func (a *AuthUsecase) HandleLogin(ctx context.Context, userId, password string) 
 	if err != nil {
 		return "", fmt.Errorf("error generated token: %w", err)
 	}
+
+	a.eventPublisher.PublishWithUser(ctx, events.EventUserLogin, 0, "user", map[string]interface{}{
+		"user_id": userId,
+	})
 
 	return token, nil
 }

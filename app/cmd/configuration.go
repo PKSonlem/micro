@@ -14,6 +14,11 @@ const (
 	envPostgresMaxIdleConnections = "POSTGRES_MAX_IDLE_CONNECTIONS"
 	envPostgresMaxOpenConnections = "POSTGRES_MAX_OPEN_CONNECTIONS"
 
+	envClickHouseAddr     = "CLICKHOUSE_ADDR"
+	envClickHouseDB       = "CLICKHOUSE_DB"
+	envClickHouseUser     = "CLICKHOUSE_USER"
+	envClickHousePassword = "CLICKHOUSE_PASSWORD"
+
 	envServerHost = "SERVER_HOST"
 	envServerPort = "SERVER_PORT"
 
@@ -100,15 +105,34 @@ func newFromEnv() (*configuration, error) {
 
 	c.workerConfiguration = wc
 
+	cc := &clickHouseConfiguration{}
+
+	cc.addr, err = getStringFromEnv(envClickHouseAddr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get clickhouse addr: %w", err)
+	}
+
+	cc.db, err = getStringFromEnv(envClickHouseDB)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get clickhouse db: %w", err)
+	}
+
+	cc.user = getStringFromEnvOrDefault(envClickHouseUser, "default")
+
+	cc.password = getStringFromEnvOrDefault(envClickHousePassword, "")
+
+	c.clickHouseConfiguration = cc
+
 	return c, nil
 }
 
 // структура для хранения конфигураций, под каждую новую зависимость переменные окружения парсятся тут
 type configuration struct {
-	postgresConfiguration *postgresConfiguration
-	serverConfiguration   *serverConfiguration
-	workerConfiguration   *workerConfiguration
-	jwtSecret             string
+	postgresConfiguration   *postgresConfiguration
+	serverConfiguration     *serverConfiguration
+	workerConfiguration     *workerConfiguration
+	clickHouseConfiguration *clickHouseConfiguration
+	jwtSecret               string
 }
 
 type postgresConfiguration struct {
@@ -120,6 +144,13 @@ type postgresConfiguration struct {
 	sslmode            string
 	maxIdleConnections int64
 	maxOpenConnections int64
+}
+
+type clickHouseConfiguration struct {
+	addr     string
+	db       string
+	user     string
+	password string
 }
 
 type serverConfiguration struct {
@@ -180,4 +211,8 @@ func (w *workerConfiguration) GetInterval() int64 {
 
 func (w *workerConfiguration) GetLimit() int {
 	return int(w.limit)
+}
+
+func (w *configuration) GetClickHouseConfiguration() *clickHouseConfiguration {
+	return w.clickHouseConfiguration
 }

@@ -13,12 +13,12 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
-	"github.com/timurzdev/mentorship-test-task/cmd"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/repository"
-	"github.com/timurzdev/mentorship-test-task/internal/service/helpers"
-	"github.com/timurzdev/mentorship-test-task/migrations"
-	"github.com/timurzdev/mentorship-test-task/pkg/fixtures"
+	"github.com/PKSonlem/micro/cmd"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/repository"
+	"github.com/PKSonlem/micro/internal/service/helpers"
+	"github.com/PKSonlem/micro/migrations"
+	"github.com/PKSonlem/micro/pkg/fixtures"
 )
 
 const (

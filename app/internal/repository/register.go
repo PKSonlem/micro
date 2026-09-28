@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/PKSonlem/micro/internal/entity"
 )
 
 const userTable = "users"

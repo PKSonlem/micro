@@ -9,11 +9,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	depsmocks "github.com/timurzdev/mentorship-test-task/internal/deps/mocks"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth/mocks"
-	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
-	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	depsmocks "github.com/PKSonlem/micro/internal/deps/mocks"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/handler/middlewares/auth/mocks"
+	"github.com/PKSonlem/micro/internal/service/roles"
+	"github.com/PKSonlem/micro/internal/service/token"
 	"go.uber.org/mock/gomock"
 )
 

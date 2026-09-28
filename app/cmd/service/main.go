@@ -10,7 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
-	"github.com/timurzdev/mentorship-test-task/cmd"
+	"github.com/PKSonlem/micro/cmd"
 )
 
 const (

@@ -12,7 +12,7 @@ var (
 
 type tagName string
 
-type fields struct {
+type field struct {
 	f map[string]string
 }
 
@@ -25,11 +25,11 @@ func newContextHandler(h slog.Handler) contextHandler {
 }
 
 func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
-	t, _ := ctx.Value(defaultTagName).(fields)
+	t, _ := ctx.Value(defaultTagName).(field)
 
 	attrs := make([]slog.Attr, len(t.f))
-	for name, value := range t.f {
-		attrs = append(attrs, slog.String(name, value))
+	for idx, value := range t.f {
+		attrs = append(attrs, slog.String(idx, value))
 	}
 	r.AddAttrs(attrs...)
 
@@ -46,15 +46,15 @@ func New() *Logger {
 	return &Logger{slog.New(&ctxHandler)}
 }
 
-func buildFields() fields {
-	m := make(map[string]string, 0)
-	return fields{f: m}
+func buildFields() field {
+	m := make(map[string]string)
+	return field{f: m}
 }
 
 func (l *Logger) WithFields(ctx context.Context, f map[string]string) context.Context {
-	var t fields
+	var t field
 
-	t, ok := ctx.Value(defaultTagName).(fields)
+	t, ok := ctx.Value(defaultTagName).(field)
 	if !ok {
 		t = buildFields()
 	}
@@ -67,9 +67,9 @@ func (l *Logger) WithFields(ctx context.Context, f map[string]string) context.Co
 }
 
 func (l *Logger) Info(ctx context.Context, message string, args ...any) {
-	l.InfoContext(ctx, message, args...)
+	l.Info(ctx, message, args...)
 }
 
 func (l *Logger) Error(ctx context.Context, err error, args ...any) {
-	l.ErrorContext(ctx, err.Error(), args...)
+	l.Error(ctx, err, args...)
 }

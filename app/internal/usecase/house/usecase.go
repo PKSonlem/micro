@@ -3,8 +3,8 @@ package house
 import (
 	"context"
 
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/pkg/events"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/pkg/events"
 )
 
 type Usecase struct {

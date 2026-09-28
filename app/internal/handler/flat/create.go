@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/timurzdev/mentorship-test-task/internal/deps"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
-	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
-	flatusecases "github.com/timurzdev/mentorship-test-task/internal/usecase/flat"
+	"github.com/PKSonlem/micro/internal/deps"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/generated"
+	"github.com/PKSonlem/micro/internal/service/converters"
+	flatusecases "github.com/PKSonlem/micro/internal/usecase/flat"
 )
 
 type Handler struct {

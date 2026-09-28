@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/timurzdev/mentorship-test-task/internal/repository"
-	"github.com/timurzdev/mentorship-test-task/pkg/logger"
-	"github.com/timurzdev/mentorship-test-task/pkg/sender"
+	"github.com/PKSonlem/micro/internal/repository"
+	"github.com/PKSonlem/micro/pkg/logger"
+	"github.com/PKSonlem/micro/pkg/sender"
 )
 
 type OutboxWorker struct {

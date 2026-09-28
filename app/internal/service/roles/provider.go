@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/PKSonlem/micro/internal/entity"
 )
 
 type contextKey string

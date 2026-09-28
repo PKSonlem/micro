@@ -1,4 +1,4 @@
-module github.com/timurzdev/mentorship-test-task
+module github.com/PKSonlem/micro
 
 go 1.25
 

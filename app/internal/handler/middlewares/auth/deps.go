@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/service/token"
 )
 
 //go:generate mockgen -source=deps.go -destination=mocks/mock_token_service.go -package=mocks

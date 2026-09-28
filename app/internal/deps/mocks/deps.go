@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	prometheus "github.com/prometheus/client_golang/prometheus"
-	entity "github.com/timurzdev/mentorship-test-task/internal/entity"
+	entity "github.com/PKSonlem/micro/internal/entity"
 	gomock "go.uber.org/mock/gomock"
 )
 

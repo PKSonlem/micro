@@ -8,7 +8,7 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/PKSonlem/micro/internal/entity"
 )
 
 type rowUserLogin struct {

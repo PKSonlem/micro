@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/timurzdev/mentorship-test-task/internal/deps"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
-	"github.com/timurzdev/mentorship-test-task/internal/service/token"
+	"github.com/PKSonlem/micro/internal/deps"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/service/roles"
+	"github.com/PKSonlem/micro/internal/service/token"
 )
 
 type Middleware struct {

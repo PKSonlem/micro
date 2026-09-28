@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "github.com/timurzdev/mentorship-test-task/internal/entity"
+	entity "github.com/PKSonlem/micro/internal/entity"
 	gomock "go.uber.org/mock/gomock"
 )
 

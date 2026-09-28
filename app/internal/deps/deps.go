@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/PKSonlem/micro/internal/entity"
 )
 
 //go:generate mockgen -source deps.go -destination=mocks/deps.go -package mocks

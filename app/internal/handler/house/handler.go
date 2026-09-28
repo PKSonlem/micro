@@ -3,7 +3,7 @@ package house
 import (
 	"context"
 
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
+	"github.com/PKSonlem/micro/internal/generated"
 )
 
 func (h *Handler) Subscribe(ctx context.Context, request generated.PostHouseIdSubscribeRequestObject) (generated.PostHouseIdSubscribeResponseObject, error) {

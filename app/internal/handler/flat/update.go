@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
-	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
-	"github.com/timurzdev/mentorship-test-task/internal/service/roles"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/generated"
+	"github.com/PKSonlem/micro/internal/service/converters"
+	"github.com/PKSonlem/micro/internal/service/roles"
 )
 
 func (h *Handler) UpdateModeratorFlat(ctx context.Context, request generated.PostFlatUpdateRequestObject) (generated.PostFlatUpdateResponseObject, error) {

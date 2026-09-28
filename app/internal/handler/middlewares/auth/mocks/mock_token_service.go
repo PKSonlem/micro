@@ -12,8 +12,8 @@ package mocks
 import (
 	reflect "reflect"
 
-	entity "github.com/timurzdev/mentorship-test-task/internal/entity"
-	token "github.com/timurzdev/mentorship-test-task/internal/service/token"
+	entity "github.com/PKSonlem/micro/internal/entity"
+	token "github.com/PKSonlem/micro/internal/service/token"
 	gomock "go.uber.org/mock/gomock"
 )
 

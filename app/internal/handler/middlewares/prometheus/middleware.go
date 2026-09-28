@@ -5,7 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/timurzdev/mentorship-test-task/internal/deps"
+	"github.com/PKSonlem/micro/internal/deps"
 )
 
 var (

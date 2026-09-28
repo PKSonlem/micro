@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
-	"github.com/timurzdev/mentorship-test-task/pkg/events"
+	"github.com/PKSonlem/micro/pkg/events"
 )
 
 type AnalyticsRepository struct {

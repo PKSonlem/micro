@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
+	"github.com/PKSonlem/micro/internal/entity"
 )
 
 //go:generate mockgen -source=deps.go -destination=mock/deps.go -package=mock

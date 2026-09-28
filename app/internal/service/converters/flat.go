@@ -1,8 +1,8 @@
 package converters
 
 import (
-	"github.com/timurzdev/mentorship-test-task/internal/entity"
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
+	"github.com/PKSonlem/micro/internal/entity"
+	"github.com/PKSonlem/micro/internal/generated"
 )
 
 func FlatFromGenCreate(reqGen generated.PostFlatCreateJSONBody) entity.Flat {

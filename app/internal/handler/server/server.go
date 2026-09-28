@@ -5,14 +5,14 @@ import (
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/timurzdev/mentorship-test-task/internal/deps"
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
+	"github.com/PKSonlem/micro/internal/deps"
+	"github.com/PKSonlem/micro/internal/generated"
 
-	authhandler "github.com/timurzdev/mentorship-test-task/internal/handler/auth"
-	flathandler "github.com/timurzdev/mentorship-test-task/internal/handler/flat"
-	househandler "github.com/timurzdev/mentorship-test-task/internal/handler/house"
-	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/auth"
-	"github.com/timurzdev/mentorship-test-task/internal/handler/middlewares/prometheus"
+	authhandler "github.com/PKSonlem/micro/internal/handler/auth"
+	flathandler "github.com/PKSonlem/micro/internal/handler/flat"
+	househandler "github.com/PKSonlem/micro/internal/handler/house"
+	"github.com/PKSonlem/micro/internal/handler/middlewares/auth"
+	"github.com/PKSonlem/micro/internal/handler/middlewares/prometheus"
 )
 
 // Server реализует StrictServerInterface

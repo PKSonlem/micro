@@ -3,8 +3,8 @@ package house
 import (
 	"context"
 
-	"github.com/timurzdev/mentorship-test-task/internal/generated"
-	"github.com/timurzdev/mentorship-test-task/internal/service/converters"
+	"github.com/PKSonlem/micro/internal/generated"
+	"github.com/PKSonlem/micro/internal/service/converters"
 )
 
 func (h *Handler) GetHouseFlats(ctx context.Context, request generated.GetHouseIdRequestObject) (generated.GetHouseIdResponseObject, error) {
